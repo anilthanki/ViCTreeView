@@ -1,0 +1,439 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <!-- Latest compiled and minified CSS -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+
+    <script src="d3.v3.min.js"></script>
+    <script src="phylotree.js"></script>
+    <script src="underscore-min.js"></script>
+
+    <script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script>
+
+
+
+    <link href="phylotree.css" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+
+    <script>
+
+        console.log("here")
+
+        $("#example_parvoviridae").on ("click", function (e) {
+
+            console.log("here")
+            $.ajax({
+                type: "GET",
+                url: "parvoviridae_tree.nhx",
+                dataType: "text",
+                success: function (treeString) {
+                    console.log(treeString)
+
+                    var res = d3_phylotree_newick_parser ( treeString );
+                    console.log(res)
+//                default_tree_settings ();
+                    drawTree(res, "#tree_container")
+//                tree(res).svg(svg).layout();
+
+                }
+            });
+        })
+
+        $.ajax({
+            type: "GET",
+            url: "denso_tree.nhx",
+            dataType: "text",
+            success: function (treeString) {
+                console.log(treeString)
+
+                var res = d3_phylotree_newick_parser ( treeString );
+                console.log(res)
+//                default_tree_settings ();
+                drawTree(res, "#tree_container")
+//                tree(res).svg(svg).layout();
+
+            }
+        });
+
+
+        function d3_phylotree_newick_parser(nwk_str, container, bootstrap_values) {
+
+            var clade_stack = [];
+
+            function add_new_tree_level () {
+                var new_level  = {"name" : null};
+                var the_parent = clade_stack[clade_stack.length-1];
+                if (!("children" in the_parent)) {
+                    the_parent["children"] = [];
+                }
+                clade_stack.push (new_level);
+                the_parent["children"].push (clade_stack[clade_stack.length-1]);
+                clade_stack[clade_stack.length-1]["original_child_order"] = the_parent["children"].length;
+            }
+
+            function finish_node_definition () {
+                var this_node = clade_stack.pop();
+                if (bootstrap_values && 'children' in this_node) {
+                    this_node["bootstrap_values"] = current_node_name;
+                } else {
+                    this_node["name"]      = current_node_name;
+                }
+                this_node["attribute"] = current_node_attribute;
+                this_node["annotation"] = current_node_annotation;
+                current_node_name = '';
+                current_node_attribute = '';
+                current_node_annotation = '';
+            }
+
+
+            function generate_error (location) {
+                return {"json": null, "error": "Unexpected '" + nwk_str[location] + "' in '" + nwk_str.substring (location - 20, location + 1) + "[ERROR HERE]" + nwk_str.substring (location + 1, location + 20) + "'"};
+            }
+
+            var automaton_state        = 0;
+            var current_node_name      = '';
+            var current_node_attribute = '';
+            var current_node_annotation = '';
+            var quote_delimiter        = null;
+            var name_quotes            = {"'" : 1, "\"" : 1};
+
+            var tree_json = {"name": "root"};
+            clade_stack.push  (tree_json);
+
+            var space = /\s/;
+
+            for (var char_index = 0; char_index < nwk_str.length; char_index++) {
+                try {
+                    var current_char = nwk_str[char_index];
+                    switch (automaton_state) {
+                        case 0: {
+                            // look for the first opening parenthesis
+                            if (current_char == '(') {
+                                add_new_tree_level ();
+                                automaton_state = 1; // expecting node name
+                            }
+                            break;
+                        }
+                        case 1: // name
+                        case 3: // branch length
+                        {
+                            // reading name
+                            if (current_char == ':') {
+                                if (automaton_state == 3) {
+                                    return generate_error (char_index);
+                                }
+                                automaton_state = 3;
+                            } else if (current_char == ',' || current_char == ')') {
+                                try {
+                                    finish_node_definition ();
+                                    automaton_state = 1;
+                                    if (current_char == ',') {
+                                        add_new_tree_level();
+                                    }
+                                }
+                                catch (e) {
+                                    return generate_error (char_index);
+                                }
+                            } else if (current_char == '(') {
+                                if (current_node_name.length > 0) {
+                                    return generate_error (char_index);
+                                } else {
+                                    add_new_tree_level ();
+                                }
+                            } else if (current_char in name_quotes) {
+                                if (automaton_state == 1 && current_node_name.length == 0 && current_node_attribute.length == 0 && current_node_annotation.length == 0) {
+                                    automaton_state = 2;
+                                    quote_delimiter = current_char;
+                                    continue;
+                                }
+                                return generate_error (char_index);
+                            } else {
+                                if (current_char == '[') {
+                                    if (current_node_annotation.length) {
+                                        return generate_error (char_index);
+                                    } else {
+                                        automaton_state = 4;
+                                    }
+                                } else {
+                                    if (automaton_state == 3) {
+                                        current_node_attribute += current_char;
+                                    } else {
+                                        if (space.test(current_char)) {
+                                            continue;
+                                        }
+                                        current_node_name += current_char;
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                        case 2: {
+                            if (current_char == quote_delimiter) {
+                                if (char_index < nwk_str.length - 1) {
+                                    if (nwk_str[char_index+1] == quote_delimiter) {
+                                        char_index ++;
+                                        current_node_name += quote_delimiter;
+                                        continue;
+                                    }
+                                }
+                                quote_delimiter = 0;
+                                automaton_state = 1;
+                                continue;
+                            } else {
+                                current_node_name += current_char;
+                            }
+                            break;
+                        }
+                        case 4: {
+                            if (current_char == ']') {
+                                automaton_state = 3;
+                            } else {
+                                if (current_char == '[')  {
+                                    return generate_error (char_index);
+                                }
+                                current_node_annotation += current_char;
+                            }
+                            break;
+                        }
+                    }
+                }
+                catch (e) {
+                    return generate_error (char_index);
+                }
+            }
+
+            if (clade_stack.length != 1) {
+                return generate_error (nwk_str.length-1);
+            }
+
+            return {"json": tree_json, "error": null};
+        }
+        //        });
+
+
+    </script>
+</head>
+<body style = 'padding-top: 100px;'>
+<!--
+###############################################################################################################################
+-->
+<!-- Edited by SM -->
+
+
+<!--<head> -->
+<!--</head>-->
+<!--<body>-->
+
+<div data-role="page">
+    <div data-role="header">
+        <h1>Slider Control</h1>
+    </div>
+
+    <div data-role="main" class="ui-content">
+        <form method="post" action="demoform.asp">
+            <label for="points"> % Identity:</label>
+            <input type="range" name="points" id="points" value="100" min="0" max="100" step="10" data-show-value="true">
+            <input type="submit" data-inline="true" value="Submit">
+        </form>
+    </div>
+</div>
+
+
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">D3 Tree Viewer</a>
+        </div>
+
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <!-- Edited by SM
+                   <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Newick <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                          <li><a href="#" data-toggle="modal" data-target="#newick_modal">Input Text</a></li>
+                          <li><a href="#"><input type="file" id="newick_file"/></a></li>
+                          <li class="divider"></li>
+                          <li><a href="#" data-toggle="modal" data-target="#newick_export_modal">Export</a></li>
+                        </ul>
+                      </li>-->
+                <!--<li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Display options <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#" id = 'display_dengrogram'>Dendrogram</a></li>
+                    <li><a href="#" id = 'display_tree'>Tree</a></li>
+                     <li class="divider"></li>
+                    <li><a href="#">Horizontal</a></li>
+                    <li><a href="#">Vertical</a></li>
+                  </ul>
+                </li>-->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Examples <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" id = "example_denso" >Densovirinae_tree</a></li>
+                        <!--<li><a href="#" id = "example_influenza_color">Unscaled IAV HA colored by host</a></li>
+                        <li><a href="#" id = "example_NGS" >NGS copy diversity</a></li> -->
+                        <li><a href="#" id = "example_parvoviridae" >Parvovirinae_tree</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+<div id=save class="navbar-brand"> Capture Image </div>
+
+            <div class="form-group navbar-form navbar-right">
+                <input type="text" id = 'branch_filter' class="form-control" placeholder="Filter branches on">
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-5 navbar-right ">
+                    <div class="navbar-form " role="search">
+                        <div class="input-group">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            Tag <span class="caret"></span>
+                        </button>
+                          <ul class="dropdown-menu" id = "selection_name_dropdown">
+                              <li id = "selection_new"><a href="#">New selection set</a></li>
+                              <li id = "selection_delete" class = "disabled"><a href="#">Delete selection set</a></li>
+                              <li id = "selection_rename"><a href="#">Rename selection set</a></li>
+                              <li class="divider"></li>
+                          </ul>
+                    </span>
+
+                            <input type="text" class="form-control" value = "Foreground" id = "selection_name_box" disabled>
+
+                    <span class="input-group-btn" id = "save_selection_name" style = "display: none" >
+                        <button type="button" class="btn btn-default" id = "cancel_selection_button" >
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-default" id = "save_selection_button">
+                            Save
+                        </button>
+                    </span>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Selection <span class="caret"></span></button>
+                          <ul class="dropdown-menu">
+                              <li><a href="#" id = "filter_add">Add filtered nodes to selection</a></li>
+                              <li><a href="#" id = "filter_remove">Remove filtered nodes from selection</a></li>
+                              <li class="divider"></li>
+                              <li><a href="#" id = "select_all">Select all</a></li>
+                              <li><a href="#" id = "select_all_internal">Select all internal nodes</a></li>
+                              <li><a href="#" id = "select_all_leaves">Select all leaf nodes</a></li>
+                              <li><a href="#" id = "clear_internal">Clear all internal nodes</a></li>
+                              <li><a href="#" id = "clear_leaves">Clear all leaves</a></li>
+                              <li><a href="#" id = "select_none">Clear selection</a></li>
+                              <li class="divider"></li>
+                              <li><a href="#" id = "mp_label">Label internal nodes using maximum parsimony</a></li>
+                              <li><a href="#" id = "and_label">Label internal nodes using conjunction (AND) </a></li>
+                              <li><a href="#" id = "or_label">Label internal nodes using disjunction (OR) </a></li>
+                          </ul>
+                    </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+<div class="modal" id = 'newick_modal'>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Newick string to render</h4>
+            </div>
+            <div class="modal-body" id = 'newick_body'>
+                <textarea id = 'nwk_spec' autofocus = true placeholder = "" style = 'width: 100%; height: 100%' rows = 20 selectionStart = 1 selectionEnd = 1000>(a : 0.1, (b : 0.11, (c : 0.12, d : 0.13) : 0.14) : 0.15)</textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id = 'validate_newick'>Display this tree</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal" id = 'newick_export_modal'>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body" id = 'newick_body'>
+                <textarea id = 'nwk_export_spec' autofocus = true placeholder = "" style = 'width: 100%; height: 100%' rows = 20></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class = 'container' id = "main_display">
+
+    <div class = 'row'>
+        <div class = 'col-md-12'>
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default btn-sm" id = "expand_spacing" title = "Expand spacing">
+                        <i class="fa fa-expand" ></i>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id = "compress_spacing" title = "Compress spacing">
+                        <i class="fa fa-compress" ></i>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id = "sort_ascending" title = "Sort deepest clades to the bototm">
+                        <i class="fa fa-sort-amount-asc" ></i>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id = "sort_descending" title = "Sort deepsest clades to the top">
+                        <i class="fa fa-sort-amount-desc" ></i>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id = "sort_original" title = "Restore original order">
+                        <i class="fa fa-sort" ></i>
+                    </button>
+                </div>
+                <label class = "pull-right">Selected <span class="badge" id = "selected_branch_counter">0</span> and filtered <span class="badge" id = "selected_filtered_counter">0</span> branches</label>
+            </div>
+        </div>
+    </div>
+
+    <div class = 'row'>
+        <div class = 'col-md-12'>
+            <div id = 'tree_container' class = 'tree-widget'>
+            </div>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvas" width="1000px" height="600px"></canvas> 
+
+
+</body>
+</html>
