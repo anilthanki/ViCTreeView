@@ -4,6 +4,12 @@
     stroke-width: 1.5px;
 }
 
+path {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px;
+}
+
 .tree-selection-brush .extent {
     fill-opacity: .05;
     stroke: #fff;
@@ -90,8 +96,8 @@ stroke: #CCC;
 .tree-widget {
 }
 
-   path.selected {
+path.selected {
         stroke: darkred;
         fill: none;
         stroke-width: 5px;
-    }
+}

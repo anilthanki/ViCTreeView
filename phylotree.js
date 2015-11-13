@@ -83,6 +83,13 @@ function drawTree(file, div) {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+svg.append("svg:clipPath").attr("id", "clipper")
+    .append("svg:rect")
+    .attr('id', 'clip-rect');
+
+// set the clipping path
+var animGroup = svg.append("svg:g")
+    .attr("clip-path", "url(#clipper)");
 
     // Attach the hover and click handlers
 
@@ -155,29 +162,7 @@ function drawTree(file, div) {
             })
             .text(function (d) {
                 return d.name;
-            }).on('click', function (nd, i) {
-                // Walk parent chain
-                var ancestors = [];
-                var parent = nd;
-                while (!_.isUndefined(parent)) {
-                    ancestors.push(parent);
-                    parent = parent.parent;
-                }
-
-                // Get the matched links
-                var matchedLinks = [];
-                svg.selectAll('path')
-                    .filter(function (d, i) {
-                        return _.any(ancestors, function (p) {
-                            return p === d.target;
-                        });
-                    })
-                    .each(function (d) {
-                        matchedLinks.push(d);
-                    });
-
-                animateParentChain(matchedLinks);
-            });
+            }).on('click', pathtoparent);
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
@@ -259,9 +244,9 @@ function drawTree(file, div) {
                 x: d.target.y
             }]);
         })
-            .style("fill", "none")
-            .style("stroke", " #ccc")
-            .style("stroke-width", "1.5px")
+            // .style("fill", "none")
+            // .style("stroke", " #ccc")
+            // .style("stroke-width", "1.5px")
         // .attr("d", diagonal);
 
         // Transition exiting nodes to the parent's new position.
@@ -297,23 +282,70 @@ function drawTree(file, div) {
         update(d);
     }
 
-    function animateParentChain(links) {
-        var linkRenderer = d3.svg.diagonal()
-            .projection(function (d) {
-                return [d.y, d.x];
+    function pathtoparent(d, i) {
+        console.log("here")
+
+        // Walk parent chain
+        var ancestors = [];
+        var n_ancestors = [];
+        var parent = d;
+        while (!_.isUndefined(parent)) {
+            ancestors.push(parent);
+            n_ancestors.unshift(parent.name);
+            parent = parent.parent;
+        }
+        var breadcrumb = '';
+        _.each(n_ancestors, function(key, val) {
+            if (val < n_ancestors.length -1) breadcrumb += key + ' / ';
+            else breadcrumb += key;
+        });
+        $("#infobox").text(breadcrumb);
+
+
+        var matchedLinks = [];
+        svg.selectAll('path')
+            .filter(function(d, i)
+            {
+                return _.any(ancestors, function(p)
+                    {
+                        return p === d.target;
+                    });
+            })
+            .each(function(d)
+            {
+                matchedLinks.push(d);
             });
 
-        // Links
-        svg.selectAll("path.selected")
+        animateParentChain(matchedLinks);
+    }
+
+    function animateParentChain(links) {
+        console.log("here 2")
+        var linkRenderer = d3.svg.line().interpolate('step-before')
+        .x(function (d) { return d.x; })
+        .y(function (d) { return d.y; });
+
+        animGroup.selectAll("path.selected")
             .data([])
             .exit().remove();
 
-        svg
-            .selectAll("path.selected")
+        animGroup.selectAll("path")
             .data(links)
-            .enter().append("svg:path")
+            .enter().append("path")
             .attr("class", "selected")
-            .attr("d", linkRenderer);
+            //  .style("fill", "none")
+            // .style("stroke", "red")
+            // .style("stroke-width", "1.5px")
+            .attr("d", function (d) {
+                console.log(d)
+                return diagonal([{
+                    y: d.source.x,
+                    x: d.source.y
+                }, {
+                    y: d.source.x,
+                    x: d.source.y
+                }]);
+        })
 
         // Animate the clipping path
         var overlayBox = svg.node().getBBox();
@@ -326,38 +358,7 @@ function drawTree(file, div) {
             .transition().duration(500)
             .attr("x", overlayBox.x)
             .attr("width", overlayBox.width);
-    }
 
-    function setupMouseEvents() {
-        ui.nodeGroup.on('mouseover', function (d, i) {
-            d3.select(this).select("circle").classed("hover", true);
-        })
-            .on('mouseout', function (d, i) {
-                d3.select(this).select("circle").classed("hover", false);
-            })
-            .on('click', function (nd, i) {
-                // Walk parent chain
-                var ancestors = [];
-                var parent = nd;
-                while (!_.isUndefined(parent)) {
-                    ancestors.push(parent);
-                    parent = parent.parent;
-                }
-
-                // Get the matched links
-                var matchedLinks = [];
-                ui.linkGroup.selectAll('path')
-                    .filter(function (d, i) {
-                        return _.any(ancestors, function (p) {
-                            return p === d.target;
-                        });
-                    })
-                    .each(function (d) {
-                        matchedLinks.push(d);
-                    });
-
-                animateParentChain(matchedLinks);
-            });
     }
 
 // Define the zoom function for the zoomable tree
