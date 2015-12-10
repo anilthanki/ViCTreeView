@@ -1,9 +1,29 @@
 var ui;
+var species
+var space = 3
+
+function readSpecies(file) {
+    d3.csv(file, function(data) {
+        species = data;
+    })
+}
+
 
 function drawTree(file, div) {
 
+    console.log(species)
+
     $(div).html("")
-    var margin = {top: 20, right: 120, bottom: 20, left: 120},
+
+
+
+
+    var margin = {
+            top: 20,
+            right: 120,
+            bottom: 20,
+            left: 120
+        },
         width = 960 - margin.right - margin.left,
         height = 800 - margin.top - margin.bottom;
 
@@ -15,13 +35,37 @@ function drawTree(file, div) {
         .size([height, width]);
 
     var diagonal = d3.svg.line().interpolate('step-before')
-        .x(function (d) { return d.x; })
-        .y(function (d) { return d.y; });
+        .x(function(d) {
+            return d.x;
+        })
+        .y(function(d) {
+            return d.y;
+        });
+
+    d3.select("#filterButton").on("click", function() {
+        console.log(jQuery("#points").val())
+
+        filter(jQuery("#points").val())
+
+    })
+
+    $("#sort_ascending").on("click", function(e) {
+        distance(true);
+    });
+
+    $("#sort_descending").on("click", function(e) {
+        distance(false);
+    });
 
 
-    d3.select("#save").on("click", function () {
+
+    d3.select("#save").on("click", function() {
         jQuery("#canvas").html("")
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
 
+        // do some drawing
+        context.clearRect(0, 0, canvas.width, canvas.height);
         //           d3.selectAll('.link').each(function() {
         //   var element = this;
         //   var computedStyle = getComputedStyle(element, null);
@@ -37,8 +81,7 @@ function drawTree(file, div) {
             .attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .node().parentNode.innerHTML;
-        console.log(html)
-        //console.log(html);
+
         var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
         var img = '<img src="' + imgsrc + '">';
         d3.select("#svgdataurl").html(img);
@@ -50,7 +93,7 @@ function drawTree(file, div) {
 
         var image = new Image;
         image.src = imgsrc;
-        image.onload = function () {
+        image.onload = function() {
             context.drawImage(image, 0, 0);
 
             var canvasdata = canvas.toDataURL("image/png");
@@ -72,7 +115,6 @@ function drawTree(file, div) {
     }
 
 
-    // define the zoomListener which calls the zoom function on the "zoom" event constrained within the scaleExtents
     var zoomListener = d3.behavior.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
 
 
@@ -83,18 +125,14 @@ function drawTree(file, div) {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-svg.append("svg:clipPath").attr("id", "clipper")
-    .append("svg:rect")
-    .attr('id', 'clip-rect');
+    svg.append("svg:clipPath").attr("id", "clipper")
+        .append("svg:rect")
+        .attr('id', 'clip-rect');
 
-// set the clipping path
-var animGroup = svg.append("svg:g")
-    .attr("clip-path", "url(#clipper)");
+    var animGroup = svg.append("svg:g")
+        .attr("clip-path", "url(#clipper)");
 
-    // Attach the hover and click handlers
-
-
-    d3.json(file, function () {
+    d3.json(file, function() {
 
         root = file.json;
         root.x0 = height / 2;
@@ -108,8 +146,6 @@ var animGroup = svg.append("svg:g")
             }
         }
 
-
-        //root.children.forEach(collapse);
         update(root);
     });
 
@@ -122,59 +158,57 @@ var animGroup = svg.append("svg:g")
         var nodes = tree.nodes(root).reverse(),
             links = tree.links(nodes);
 
-        // Normalize for fixed-depth.
-        //nodes.forEach(function (d) {
-        //    d.y = d.depth * 180;
-        //});
-
         // Update the nodes…
         var node = svg.selectAll("g.node")
-            .data(nodes, function (d) {
+            .data(nodes, function(d) {
                 return d.id || (d.id = ++i);
             });
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
-            .attr("transform", function (d) {
+            .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
             .on("click", click);
 
         nodeEnter.append("circle")
 
-            .attr("r", 1e-6)
+        .attr("r", 1e-6)
             .style("fill", "steelblue")
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
-            .style("fill", function (d) {
+            .style("fill", function(d) {
                 return d._children ? "lightsteelblue" : "#fff";
             });
 
         nodeEnter.append("text")
             .style("font", "10px sans-serif")
-            .attr("x", function (d) {
+            .attr("x", function(d) {
                 return d.children || d._children ? -10 : 10;
             })
             .attr("dy", ".35em")
-            .attr("text-anchor", function (d) {
+            .attr("text-anchor", function(d) {
                 return d.children || d._children ? "end" : "start";
             })
-            .text(function (d) {
+            .text(function(d) {
                 return d.name;
             }).on('click', pathtoparent);
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
             .duration(duration)
-            .attr("transform", function (d) {
+            .attr("transform", function(d) {
                 console.log("transition node")
                 return "translate(" + d.y + "," + d.x + ")";
             });
 
         nodeUpdate.select("circle")
             .attr("r", 4.5)
-            .style("fill", function (d) {
+            .attr("species", function(d) {
+                return d.species
+            })
+            .style("fill", function(d) {
                 return d._children ? "lightsteelblue" : "#fff";
             });
 
@@ -184,7 +218,7 @@ var animGroup = svg.append("svg:g")
         // Transition exiting nodes to the parent's new position.
         var nodeExit = node.exit().transition()
             .duration(duration)
-            .attr("transform", function (d) {
+            .attr("transform", function(d) {
                 return "translate(" + source.y + "," + source.x + ")";
             })
             .remove();
@@ -197,80 +231,70 @@ var animGroup = svg.append("svg:g")
 
         // Update the links…
 
-// var link = svg.append("path")
-//       .datum(links)
-//       .attr("class", "line")
-//       .attr("d", line);
-
         var link = svg.selectAll("path")
-            .data(links, function (d) {
+            .data(links, function(d) {
                 // console.log(d)
                 return d.target.id;
             });
 
         // Enter any new links at the parent's previous position.
         link.enter()
-        .append("path", "g")
+            .append("path", "g")
             // .attr("class", "link")
-            // .style("fill", "none")
-            // .style("stroke"," #ccc")
-            // .style("stroke-width", "1.5px")
-       .attr("d", function (d) {
-                      return diagonal([{
-                y: d.source.x,
-                x: d.source.y
-            }, {
-                y: d.source.x,
-                x: d.source.y
-            }]);
-        })
-        .transition()
-        .duration(2000)
-        .ease("linear")
-        .attr("stroke-dashoffset", 0)
-        ;
+            .style("fill", "none")
+            .style("stroke", " #ccc")
+            .style("stroke-width", "1.5px")
+            .attr("d", function(d) {
+                return diagonal([{
+                    y: d.source.x,
+                    x: d.source.y
+                }, {
+                    y: d.source.x,
+                    x: d.source.y
+                }]);
+            })
+            .transition()
+            .duration(2000)
+            .ease("linear")
+            .attr("stroke-dashoffset", 0);
 
         // Transition links to their new position.
         link.transition()
             .duration(duration)
-            .attr("d", function (d) {
+            .attr("d", function(d) {
                 console.log("transition link")
 
-            return diagonal([{
-                y: d.source.x,
-                x: d.source.y
-            }, {
-                y: d.target.x,
-                x: d.target.y
-            }]);
-        })
-            // .style("fill", "none")
-            // .style("stroke", " #ccc")
-            // .style("stroke-width", "1.5px")
-        // .attr("d", diagonal);
+                return diagonal([{
+                    y: d.source.x,
+                    x: d.source.y
+                }, {
+                    y: d.target.x,
+                    x: d.target.y
+                }]);
+            })
 
         // Transition exiting nodes to the parent's new position.
         link.exit().transition()
             .duration(duration)
-            .attr("d", function (d) {
-            return diagonal([{
-                y: d.source.x,
-                x: d.source.y
-            }, {
-                y: d.target.x,
-                x: d.target.y
-            }]);
-        })
+            .attr("d", function(d) {
+                return diagonal([{
+                    y: d.source.x,
+                    x: d.source.y
+                }, {
+                    y: d.target.x,
+                    x: d.target.y
+                }]);
+            })
             .remove();
 
         // Stash the old positions for transition.
-        nodes.forEach(function (d) {
+        nodes.forEach(function(d) {
             d.x0 = d.x;
             d.y0 = d.y;
         });
     }
 
-// Toggle children on click.
+    // Toggle children on click.
     function click(d) {
         if (d.children) {
             d._children = d.children;
@@ -296,7 +320,7 @@ var animGroup = svg.append("svg:g")
         }
         var breadcrumb = '';
         _.each(n_ancestors, function(key, val) {
-            if (val < n_ancestors.length -1) breadcrumb += key + ' / ';
+            if (val < n_ancestors.length - 1) breadcrumb += key + ' / ';
             else breadcrumb += key;
         });
         $("#infobox").text(breadcrumb);
@@ -304,15 +328,12 @@ var animGroup = svg.append("svg:g")
 
         var matchedLinks = [];
         svg.selectAll('path')
-            .filter(function(d, i)
-            {
-                return _.any(ancestors, function(p)
-                    {
-                        return p === d.target;
-                    });
+            .filter(function(d, i) {
+                return _.any(ancestors, function(p) {
+                    return p === d.target;
+                });
             })
-            .each(function(d)
-            {
+            .each(function(d) {
                 matchedLinks.push(d);
             });
 
@@ -322,8 +343,12 @@ var animGroup = svg.append("svg:g")
     function animateParentChain(links) {
         console.log("here 2")
         var linkRenderer = d3.svg.line().interpolate('step-before')
-        .x(function (d) { return d.x; })
-        .y(function (d) { return d.y; });
+            .x(function(d) {
+                return d.x;
+            })
+            .y(function(d) {
+                return d.y;
+            });
 
         animGroup.selectAll("path.selected")
             .data([])
@@ -333,10 +358,10 @@ var animGroup = svg.append("svg:g")
             .data(links)
             .enter().append("path")
             .attr("class", "selected")
-            //  .style("fill", "none")
-            // .style("stroke", "red")
-            // .style("stroke-width", "1.5px")
-            .attr("d", function (d) {
+            .style("fill", "none")
+            .style("stroke", "red")
+            .style("stroke-width", "5px")
+            .attr("d", function(d) {
                 console.log(d)
                 return diagonal([{
                     y: d.source.x,
@@ -345,7 +370,7 @@ var animGroup = svg.append("svg:g")
                     y: d.source.x,
                     x: d.source.y
                 }]);
-        })
+            })
 
         // Animate the clipping path
         var overlayBox = svg.node().getBBox();
@@ -361,7 +386,36 @@ var animGroup = svg.append("svg:g")
 
     }
 
-// Define the zoom function for the zoomable tree
+    function distance(increase) {
+        console.log("sisance")
+        if (increase == true) {
+            console.log("treu " + space)
+            space += 10;
+            height += 50
+        } else {
+            space -= 10;
+            space = space < 1 ? 1 : space;
+            console.log("false " + space)
+            height -= 50
+
+        }
+        tree.size([height, width]);
+        tree.separation(function(a, b) {
+            return ((a.parent == root) && (b.parent == root)) ? space : 1;
+        })
+        update(root);
+
+    }
 
 
+    function filter(identity) {
+        d3.selectAll("circle")
+            .style("fill", function(d) {
+                console.log(d)
+
+                d.selected = d.distance >= identity
+                return d.selected ? "red" : "none";
+            })
+
+    }
 }
