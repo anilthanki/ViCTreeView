@@ -4,7 +4,7 @@
     <script src="jquery/js/jquery-1.11.2.min.js"></script>
     <script src="jquery/js/jquery-ui-1.11.2.js"></script>
 
-    <link rel="stylesheet" src="jquery/css/smoothness/jquery-ui-1.11.2.css">
+    <link rel="stylesheet" href="jquery/css/smoothness/jquery-ui-1.11.2.css" />
 
 
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
@@ -20,6 +20,9 @@
     <script src="newick-to-json.js"></script>
 
     <script src="underscore-min.js"></script>
+    <script src="d3.slider.js"></script>
+  <link rel="stylesheet" href="d3.slider.css" />  
+
 
 
 
@@ -29,6 +32,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script>
+       
+
         $.ajax({
             type: "GET",
             url: "denso_tree.nhx",
@@ -43,6 +48,7 @@
     
     function changeGenome(file){
             console.log(file)
+
             $.ajax({
                 type: "GET",
                 url: file,
@@ -54,6 +60,21 @@
                 }
             });
     }
+$( document ).ready(function() {
+    $(function() {
+        $( "#slider" ).slider({
+            value:100,
+            min: 0,
+            max: 100,
+            step: 10,
+            slide: function( event, ui ) {
+        $( "#percentage" ).val( ui.value );
+        }
+        });
+        $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
+    });
+});
+
     </script>
 </head>
 
@@ -99,6 +120,20 @@
                 </div>
             </div>
         </div>
+
+        <table width="100%">
+            <tbody>
+                <tr>
+                    <td width="20%">
+                        <label for="amount" style="color:gray">Identity %:</label>
+                        <input type="text" name="percentage" id="percentage" readonly="" style="border:0; font-weight:bold;"> 
+                    </td>
+                    <td width="80%">
+                        <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" id="slider" style="width:80%;"><span style="left: 0%;" class="ui-slider-handle ui-state-default ui-corner-all" tabindex="0"></span></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </nav>
 
 

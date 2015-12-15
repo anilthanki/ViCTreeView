@@ -10,7 +10,6 @@ function d3_phylotree_newick_parser(nwk_str, container, bootstrap_values) {
             the_parent["children"] = [];
         }
         clade_stack.push (new_level);
-
         the_parent["children"].push (clade_stack[clade_stack.length-1]);
 
         clade_stack[clade_stack.length-1]["original_child_order"] = the_parent["children"].length;

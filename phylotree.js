@@ -5,14 +5,16 @@ var space = 3
 function readSpecies(file) {
     d3.csv(file, function(data) {
         species = data;
+        console.log(species)
     })
 }
+
+
 
 
 function drawTree(file, div) {
 
     console.log(species)
-
     $(div).html("")
 
 
@@ -50,11 +52,17 @@ function drawTree(file, div) {
     })
 
     $("#sort_ascending").on("click", function(e) {
-        distance(true);
+        change_distance(true);
     });
 
+
+$("#slider").mouseup(function(){
+    var left = $("#percentage").val()
+    
+pathtohighlight(left)
+})
     $("#sort_descending").on("click", function(e) {
-        distance(false);
+        change_distance(false);
     });
 
 
@@ -165,6 +173,9 @@ function drawTree(file, div) {
             });
 
         // Enter any new nodes at the parent's previous position.
+      
+       
+
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
             .attr("transform", function(d) {
@@ -172,16 +183,46 @@ function drawTree(file, div) {
             })
             .on("click", click);
 
-        nodeEnter.append("circle")
 
-        .attr("r", 1e-6)
+
+        nodeEnter.append("circle")
+            .attr("r", 1e-6)
             .style("fill", "steelblue")
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
             .style("fill", function(d) {
-                return d._children ? "lightsteelblue" : "#fff";
+                if(d.highlighted == true){
+                console.log(d)
+
+                    return "red"
+                }
+                else{
+                    return d._children ? "lightsteelblue" : "#fff";
+                }
+            })
+            .attr("distance", function(d){
+                if(d.children){
+                    distance = 0;
+                    if(d.children[0].species){
+                        var i = d.children[0].species
+                        var j = d.children[1].species
+
+                        distance = findElement(species, "species", i)[j]*100
+                        d.distance = distance
+                        return distance
+                    }
+                    else if(d.children[0].distance){
+                        console.log(d)
+                        for(var i =0; i < d.children.length; i++){
+                            console.log("distance "+d.children[i].distance)
+                            distance += d.children[i].distance;
+                        }
+                        return distance
+                    }
+                }
             });
 
+       
         nodeEnter.append("text")
             .style("font", "10px sans-serif")
             .attr("x", function(d) {
@@ -201,6 +242,28 @@ function drawTree(file, div) {
             .attr("transform", function(d) {
                 console.log("transition node")
                 return "translate(" + d.y + "," + d.x + ")";
+            }) 
+              .attr("distance", function(d){
+                if(d.children){
+                    distance = 0;
+                    if(d.children[0].species){
+                        var i = d.children[0].species
+                        var j = d.children[1].species
+
+                        distance = findElement(species, "species", i)[j]*100
+
+                        return distance
+                    }
+                    else if(d.children[0].distance){
+                        for(var i =0; i < d.children.length; i++){
+                            distance += d.children[i].distance;
+                        }
+                        return distance
+                    }
+                }
+                else{
+                    return "NaN"
+                }
             });
 
         nodeUpdate.select("circle")
@@ -208,9 +271,16 @@ function drawTree(file, div) {
             .attr("species", function(d) {
                 return d.species
             })
-            .style("fill", function(d) {
-                return d._children ? "lightsteelblue" : "#fff";
-            });
+             .style("fill", function(d) {
+                if(d.highlighted == true){
+                console.log(d)
+                    return "red"
+                }
+                else{
+                    return d._children ? "lightsteelblue" : "#fff";
+                }
+            })
+
 
         nodeUpdate.select("text")
             .style("fill-opacity", 1);
@@ -230,8 +300,7 @@ function drawTree(file, div) {
             .style("fill-opacity", 1e-6);
 
         // Update the links…
-
-        var link = svg.selectAll("path")
+   var link = svg.selectAll("path")
             .data(links, function(d) {
                 // console.log(d)
                 return d.target.id;
@@ -286,7 +355,7 @@ function drawTree(file, div) {
                 }]);
             })
             .remove();
-
+      
         // Stash the old positions for transition.
         nodes.forEach(function(d) {
             d.x0 = d.x;
@@ -340,6 +409,23 @@ function drawTree(file, div) {
         animateParentChain(matchedLinks);
     }
 
+    function pathtohighlight(identity) {
+         svg.selectAll("circle")
+         .style("fill", "none")
+        svg.selectAll("circle")
+                .filter(function(d){
+                    if(d.distance && d.distance >= identity)
+                    {
+                        d.highlighted = true
+                        return d;
+                    }
+                    else{
+                        d.highlighted = false
+                    }
+                })
+                .style("fill", "red")
+      }
+
     function animateParentChain(links) {
         console.log("here 2")
         var linkRenderer = d3.svg.line().interpolate('step-before')
@@ -386,7 +472,7 @@ function drawTree(file, div) {
 
     }
 
-    function distance(increase) {
+    function change_distance(increase) {
         console.log("sisance")
         if (increase == true) {
             console.log("treu " + space)
@@ -418,4 +504,12 @@ function drawTree(file, div) {
             })
 
     }
+}
+
+function findElement(arr, propName, propValue) {
+  for (var i=0; i < arr.length; i++)
+    if (arr[i][propName] == propValue)
+      return arr[i];
+
+  // will return undefined if not found; you could return a default instead
 }
