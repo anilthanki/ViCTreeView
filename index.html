@@ -1,46 +1,41 @@
 <html>
 <head>
     <meta charset="utf-8">
+
     <script src="jquery/js/jquery-1.11.2.min.js"></script>
+
     <script src="jquery/js/jquery-ui-1.11.2.js"></script>
+
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <script src="scripts/d3.v3.min.js"></script>
+    
+    <script src="scripts/phylotree.js"></script>
+
+    <script src="scripts/newick-to-json.js"></script>
+
+    <script src="scripts/underscore-min.js"></script>
 
     <link rel="stylesheet" href="jquery/css/smoothness/jquery-ui-1.11.2.css" />
 
-
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
     <link href="font-awesome-4.2.0/css/font-awesome.css" rel="stylesheet">
 
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
 
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-
-
-    <script src="d3.v3.min.js"></script>
-    <script src="phylotree.js"></script>
-    <script src="newick-to-json.js"></script>
-
-    <script src="underscore-min.js"></script>
-    <script src="d3.slider.js"></script>
-  <link rel="stylesheet" href="d3.slider.css" />  
-
-
-
-
-
-    <link href="phylotree.css" rel="stylesheet">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/phylotree.css" rel="stylesheet">
 
     <script>
        
 
         $.ajax({
             type: "GET",
-            url: "denso_tree.nhx",
+            url: "data/tree/denso_tree.nhx",
             dataType: "text",
             success: function (treeString) {
                 var res = d3_phylotree_newick_parser ( treeString );
-                readSpecies("data/NS1_clustalo_dist_mat.csv")
+                readSpecies("data/matrix/NS1_clustalo_dist_mat.csv")
                 drawTree(res, "#tree_container")
             }
         });
@@ -55,7 +50,7 @@
                 dataType: "text",
                 success: function (treeString) {
                     var res = d3_phylotree_newick_parser ( treeString );
-                    readSpecies("data/NS1_clustalo_dist_mat.csv")
+                    readSpecies("data/matrix/NS1_clustalo_dist_mat.csv")
                     drawTree(res, "#tree_container")
                 }
             });
@@ -88,8 +83,8 @@ $( document ).ready(function() {
                     <li class="dropdown">
                         <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li id="example_denso" onclick="changeGenome('denso_tree.nhx')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
-                            <li id="example_parvoviridae" onclick="changeGenome('parvoviridae.nhx')" ><a href="#" class="ui-link">Parvovirinae_tree</a></li>
+                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
+                            <li id="example_parvoviridae" onclick="changeGenome('data/tree/parvoviridae.nhx')" ><a href="#" class="ui-link">Parvovirinae_tree</a></li>
                         </ul>
                     </li>
                 </ul>
