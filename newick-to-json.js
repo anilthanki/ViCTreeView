@@ -23,8 +23,8 @@ function d3_phylotree_newick_parser(nwk_str, container, bootstrap_values) {
         } else {
             console.log("else")
 
-            this_node["name"]      = current_node_name.split("_")[0];
-            this_node["species"]      = current_node_name.split("_")[1];
+            this_node["name"]      = current_node_name;
+            this_node["species"]      = current_node_name;
             distance++;
         }
         this_node["attribute"] = current_node_attribute;
