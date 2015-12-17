@@ -41,7 +41,7 @@
         });
 
     
-    function changeGenome(file){
+    function changeGenome(file, matrix){
             console.log(file)
 
             $.ajax({
@@ -50,7 +50,7 @@
                 dataType: "text",
                 success: function (treeString) {
                     var res = d3_phylotree_newick_parser ( treeString );
-                    readSpecies("data/matrix/NS1_clustalo_dist_mat.csv")
+                    readSpecies(matrix)
                     drawTree(res, "#tree_container")
                 }
             });
@@ -83,8 +83,10 @@ $( document ).ready(function() {
                     <li class="dropdown">
                         <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
-                            <li id="example_parvoviridae" onclick="changeGenome('data/tree/parvoviridae.nhx')" ><a href="#" class="ui-link">Parvovirinae_tree</a></li>
+                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx','data/matrix/NS1_clustalo_dist_mat.csv')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
+                            <!-- <li id="example_parvoviridae" onclick="changeGenome('data/tree/parvoviridae.nhx','data/matrix/NS1_clustalo_dist_mat.csv')" ><a href="#" class="ui-link">Parvovirinae_tree</a></li> -->
+                            <li id="example_txid40120" onclick="changeGenome('data/tree/txid40120_tree.nhx','data/matrix/txid40120_matrix.csv')" ><a href="#" class="ui-link">txid40120</a></li>
+
                         </ul>
                     </li>
                 </ul>

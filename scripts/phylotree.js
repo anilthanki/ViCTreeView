@@ -14,7 +14,6 @@ function readSpecies(file) {
 
 function drawTree(file, div) {
 
-    console.log(species)
     $(div).html("")
 
 
@@ -206,20 +205,24 @@ pathtohighlight(left)
                     if(d.children[0].species){
                         var i = d.children[0].species
                         var j = d.children[1].species
-
+console.log(i+" "+j)
                         distance = findElement(species, "species", i)[j]*100
                         d.distance = distance
                         return distance
                     }
-                    else if(d.children[0].distance){
-                        console.log(d)
-                        for(var i =0; i < d.children.length; i++){
-                            console.log("distance "+d.children[i].distance)
-                            distance += d.children[i].distance;
-                        }
-                        return distance
-                    }
+                    // else if(d.children[0].distance){
+                    //     console.log(d)
+                    //     for(var i =0; i < d.children.length; i++){
+                    //         console.log("distance "+d.children[i].distance)
+                    //         distance += d.children[i].distance;
+                    //     }
+                    //     return distance
+                    // }
                 }
+                else{
+                    return "NaN"
+                }
+
             });
 
        
@@ -254,12 +257,12 @@ pathtohighlight(left)
 
                         return distance
                     }
-                    else if(d.children[0].distance){
-                        for(var i =0; i < d.children.length; i++){
-                            distance += d.children[i].distance;
-                        }
-                        return distance
-                    }
+                    // else if(d.children[0].distance){
+                    //     for(var i =0; i < d.children.length; i++){
+                    //         distance += d.children[i].distance;
+                    //     }
+                    //     return distance
+                    // }
                 }
                 else{
                     return "NaN"
@@ -507,9 +510,17 @@ pathtohighlight(left)
 }
 
 function findElement(arr, propName, propValue) {
-  for (var i=0; i < arr.length; i++)
-    if (arr[i][propName] == propValue)
+console.log(1+" "+propName+" "+propValue)
+  for (var i=0; i < arr.length; i++) {
+    console.log(2 + " " + i+" "+arr[i][propName]+ " "+propValue)
+    if (arr[i][propName] == propValue) {
+console.log("ifffffff")
       return arr[i];
+
+    }
+  }
+
+
 
   // will return undefined if not found; you could return a default instead
 }
