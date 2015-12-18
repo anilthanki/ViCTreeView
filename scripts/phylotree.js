@@ -5,19 +5,12 @@ var space = 3
 function readSpecies(file) {
     d3.csv(file, function(data) {
         species = data;
-        console.log(species)
     })
 }
-
-
-
 
 function drawTree(file, div) {
 
     $(div).html("")
-
-
-
 
     var margin = {
             top: 20,
@@ -44,10 +37,7 @@ function drawTree(file, div) {
         });
 
     d3.select("#filterButton").on("click", function() {
-        console.log(jQuery("#points").val())
-
         filter(jQuery("#points").val())
-
     })
 
     $("#sort_ascending").on("click", function(e) {
@@ -55,11 +45,11 @@ function drawTree(file, div) {
     });
 
 
-$("#slider").mouseup(function(){
-    var left = $("#percentage").val()
-    
-pathtohighlight(left)
-})
+    $("#slider").mouseup(function() {
+        var left = $("#percentage").val()
+
+        pathtohighlight(left)
+    })
     $("#sort_descending").on("click", function(e) {
         change_distance(false);
     });
@@ -172,17 +162,34 @@ pathtohighlight(left)
             });
 
         // Enter any new nodes at the parent's previous position.
-      
-       
+
+
 
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
             .attr("transform", function(d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
+            .attr("distance", function(d) {
+                if (d.children) {
+                    distance = 0;
+                    if (d.children[0].species) {
+                        var i = d.children[0].species
+                        var j = d.children[1].species
+                        distance = findElement(species, "species", i)[j] * 100
+                        d.distance = distance
+                        return distance
+                    } else if (d.children[0].distance) {
+                        for (var i = 0; i < d.children.length; i++) {
+                            distance += d.children[i].distance;
+                        }
+                        d.distance = distance
+
+                        return distance
+                    }
+                }
+            })
             .on("click", click);
-
-
 
         nodeEnter.append("circle")
             .attr("r", 1e-6)
@@ -190,42 +197,16 @@ pathtohighlight(left)
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
             .style("fill", function(d) {
-                if(d.highlighted == true){
-                console.log(d)
-
+                if (d.highlighted == true) {
                     return "red"
-                }
-                else{
+                } else {
                     return d._children ? "lightsteelblue" : "#fff";
                 }
             })
-            .attr("distance", function(d){
-                if(d.children){
-                    distance = 0;
-                    if(d.children[0].species){
-                        var i = d.children[0].species
-                        var j = d.children[1].species
-console.log(i+" "+j)
-                        distance = findElement(species, "species", i)[j]*100
-                        d.distance = distance
-                        return distance
-                    }
-                    // else if(d.children[0].distance){
-                    //     console.log(d)
-                    //     for(var i =0; i < d.children.length; i++){
-                    //         console.log("distance "+d.children[i].distance)
-                    //         distance += d.children[i].distance;
-                    //     }
-                    //     return distance
-                    // }
-                }
-                else{
-                    return "NaN"
-                }
+            .attr("id", function(d) {
+                return d.id
+            })
 
-            });
-
-       
         nodeEnter.append("text")
             .style("font", "10px sans-serif")
             .attr("x", function(d) {
@@ -243,30 +224,28 @@ console.log(i+" "+j)
         var nodeUpdate = node.transition()
             .duration(duration)
             .attr("transform", function(d) {
-                console.log("transition node")
                 return "translate(" + d.y + "," + d.x + ")";
-            }) 
-              .attr("distance", function(d){
-                if(d.children){
+            })
+            .attr("distance", function(d) {
+                if (d.children) {
                     distance = 0;
-                    if(d.children[0].species){
+                    if (d.children[0].species) {
                         var i = d.children[0].species
                         var j = d.children[1].species
 
-                        distance = findElement(species, "species", i)[j]*100
+                        distance = findElement(species, "species", i)[j] * 100
+
+                        return distance
+                    } else if (d.children[0].distance) {
+                        for (var i = 0; i < d.children.length; i++) {
+                            distance += d.children[i].distance;
+                        }
+                        d.distance = distance
 
                         return distance
                     }
-                    // else if(d.children[0].distance){
-                    //     for(var i =0; i < d.children.length; i++){
-                    //         distance += d.children[i].distance;
-                    //     }
-                    //     return distance
-                    // }
                 }
-                else{
-                    return "NaN"
-                }
+
             });
 
         nodeUpdate.select("circle")
@@ -274,12 +253,13 @@ console.log(i+" "+j)
             .attr("species", function(d) {
                 return d.species
             })
-             .style("fill", function(d) {
-                if(d.highlighted == true){
-                console.log(d)
+            .attr("id", function(d) {
+                return d.id
+            })
+            .style("fill", function(d) {
+                if (d.highlighted == true) {
                     return "red"
-                }
-                else{
+                } else {
                     return d._children ? "lightsteelblue" : "#fff";
                 }
             })
@@ -303,16 +283,14 @@ console.log(i+" "+j)
             .style("fill-opacity", 1e-6);
 
         // Update the links…
-   var link = svg.selectAll("path")
+        var link = svg.selectAll("path")
             .data(links, function(d) {
-                // console.log(d)
                 return d.target.id;
             });
 
         // Enter any new links at the parent's previous position.
         link.enter()
             .append("path", "g")
-            // .attr("class", "link")
             .style("fill", "none")
             .style("stroke", " #ccc")
             .style("stroke-width", "1.5px")
@@ -334,8 +312,6 @@ console.log(i+" "+j)
         link.transition()
             .duration(duration)
             .attr("d", function(d) {
-                console.log("transition link")
-
                 return diagonal([{
                     y: d.source.x,
                     x: d.source.y
@@ -358,7 +334,7 @@ console.log(i+" "+j)
                 }]);
             })
             .remove();
-      
+
         // Stash the old positions for transition.
         nodes.forEach(function(d) {
             d.x0 = d.x;
@@ -379,8 +355,6 @@ console.log(i+" "+j)
     }
 
     function pathtoparent(d, i) {
-        console.log("here")
-
         // Walk parent chain
         var ancestors = [];
         var n_ancestors = [];
@@ -397,7 +371,6 @@ console.log(i+" "+j)
         });
         $("#infobox").text(breadcrumb);
 
-
         var matchedLinks = [];
         svg.selectAll('path')
             .filter(function(d, i) {
@@ -413,24 +386,38 @@ console.log(i+" "+j)
     }
 
     function pathtohighlight(identity) {
-         svg.selectAll("circle")
-         .style("fill", "none")
         svg.selectAll("circle")
-                .filter(function(d){
-                    if(d.distance && d.distance >= identity)
-                    {
-                        d.highlighted = true
+            .style("fill", "none")
+        var selected_nodes = d3.selectAll("circle")
+            .filter(function(d) {
+                if (d.distance <= identity) {
+                    return d
+                }
+            });
+
+        selected_nodes
+            .transition()
+            .style("fill", "red");
+
+        svg.selectAll('path').transition()
+            .style("stroke", "#ccc")
+        var selected_links = svg.selectAll('path')
+            .filter(function(d, i) {
+                return _.any(selected_nodes[0], function(p) {
+                    if (d.source.id == p.id) {
                         return d;
                     }
-                    else{
-                        d.highlighted = false
-                    }
-                })
-                .style("fill", "red")
-      }
+                });
+            })
+
+        selected_links
+            .transition()
+            .style("stroke", "red")
+
+
+    }
 
     function animateParentChain(links) {
-        console.log("here 2")
         var linkRenderer = d3.svg.line().interpolate('step-before')
             .x(function(d) {
                 return d.x;
@@ -451,7 +438,6 @@ console.log(i+" "+j)
             .style("stroke", "red")
             .style("stroke-width", "5px")
             .attr("d", function(d) {
-                console.log(d)
                 return diagonal([{
                     y: d.source.x,
                     x: d.source.y
@@ -476,15 +462,12 @@ console.log(i+" "+j)
     }
 
     function change_distance(increase) {
-        console.log("sisance")
         if (increase == true) {
-            console.log("treu " + space)
             space += 10;
             height += 50
         } else {
             space -= 10;
             space = space < 1 ? 1 : space;
-            console.log("false " + space)
             height -= 50
 
         }
@@ -495,32 +478,12 @@ console.log(i+" "+j)
         update(root);
 
     }
-
-
-    function filter(identity) {
-        d3.selectAll("circle")
-            .style("fill", function(d) {
-                console.log(d)
-
-                d.selected = d.distance >= identity
-                return d.selected ? "red" : "none";
-            })
-
-    }
 }
 
 function findElement(arr, propName, propValue) {
-console.log(1+" "+propName+" "+propValue)
-  for (var i=0; i < arr.length; i++) {
-    console.log(2 + " " + i+" "+arr[i][propName]+ " "+propValue)
-    if (arr[i][propName] == propValue) {
-console.log("ifffffff")
-      return arr[i];
-
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i][propName] == propValue) {
+            return arr[i];
+        }
     }
-  }
-
-
-
-  // will return undefined if not found; you could return a default instead
 }
