@@ -188,24 +188,25 @@ function drawTree(file, div) {
                         return distance
                     }
                 }
-            })
-            .on("click", click);
+            });
 
         nodeEnter.append("circle")
             .attr("r", 1e-6)
-            .style("fill", "steelblue")
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
+            .style("z-index", "999")
             .style("fill", function(d) {
                 if (d.highlighted == true) {
                     return "red"
                 } else {
-                    return d._children ? "lightsteelblue" : "#fff";
+                    return d._children ? "lightsteelblue" : "white";
                 }
             })
             .attr("id", function(d) {
                 return d.id
             })
+            .on("click", click);
+
 
         nodeEnter.append("text")
             .style("font", "10px sans-serif")
@@ -260,7 +261,7 @@ function drawTree(file, div) {
                 if (d.highlighted == true) {
                     return "red"
                 } else {
-                    return d._children ? "lightsteelblue" : "#fff";
+                    return d._children ? "lightsteelblue" : "white";
                 }
             })
 
@@ -292,7 +293,13 @@ function drawTree(file, div) {
         link.enter()
             .append("path", "g")
             .style("fill", "none")
-            .style("stroke", " #ccc")
+            .style("stroke", function(d) {
+                if (d.source.highlighted == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
             .style("stroke-width", "1.5px")
             .attr("d", function(d) {
                 return diagonal([{
@@ -304,6 +311,13 @@ function drawTree(file, div) {
                 }]);
             })
             .transition()
+             .style("stroke", function(d) {
+                if (d.highlighted == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
             .duration(2000)
             .ease("linear")
             .attr("stroke-dashoffset", 0);
@@ -311,6 +325,14 @@ function drawTree(file, div) {
         // Transition links to their new position.
         link.transition()
             .duration(duration)
+             .style("stroke", function(d) {
+                console.log(d)
+                if (d.source.highlighted == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
             .attr("d", function(d) {
                 return diagonal([{
                     y: d.source.x,
@@ -344,6 +366,7 @@ function drawTree(file, div) {
 
     // Toggle children on click.
     function click(d) {
+        console.log("clicked")
         if (d.children) {
             d._children = d.children;
             d.children = null;
@@ -391,11 +414,27 @@ function drawTree(file, div) {
         var selected_nodes = d3.selectAll("circle")
             .filter(function(d) {
                 if (d.distance <= identity) {
+                    d.highlighted = true
+                    if(d.children && d.children[0].species)
+                    {
+                        _.any(d.children, function(p) {
+                            p.highlighted = true
+                        });
+                    }
                     return d
+                }else{
+                    d.highlighted = false
                 }
+
             });
 
-        selected_nodes
+        d3.selectAll("circle")
+            .filter(function(d) {
+                if (d.highlighted == true) {
+                    return d
+                }
+
+            })
             .transition()
             .style("fill", "red");
 
@@ -405,7 +444,10 @@ function drawTree(file, div) {
             .filter(function(d, i) {
                 return _.any(selected_nodes[0], function(p) {
                     if (d.source.id == p.id) {
+                        d.highlighted = true
                         return d;
+                    }else{
+                        d.highlighted = false
                     }
                 });
             })
