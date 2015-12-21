@@ -333,7 +333,7 @@ function drawTree(file, div) {
                 }
             })
              .style("stroke-width", "1.5px")
-             
+
             .attr("d", function(d) {
                 return diagonal([{
                     y: d.source.x,
@@ -463,6 +463,11 @@ function drawTree(file, div) {
     function animateParentChain(links) {
 
         d3.selectAll("path")
+             .filter(function(d, i) {
+                    if (d.source.highlighted == false) {
+                        return d;
+                    }
+            })
             .style("fill", "none")
             .style("stroke", "#ccc")
             .style("stroke-width", "1.5px");
