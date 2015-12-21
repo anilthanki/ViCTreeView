@@ -463,6 +463,10 @@ function drawTree(file, div) {
     function animateParentChain(links) {
 
         d3.selectAll("path")
+            .style("stroke-width", "1.5px");
+
+
+        d3.selectAll("path")
              .filter(function(d, i) {
                     if (d.source.highlighted == false) {
                         return d;
@@ -470,7 +474,6 @@ function drawTree(file, div) {
             })
             .style("fill", "none")
             .style("stroke", "#ccc")
-            .style("stroke-width", "1.5px");
 
         d3.selectAll("path")
             .filter(function(d, i) {
