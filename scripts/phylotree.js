@@ -126,8 +126,7 @@ function drawTree(file, div) {
         .append("svg:rect")
         .attr('id', 'clip-rect');
 
-    var animGroup = svg.append("svg:g")
-        .attr("clip-path", "url(#clipper)");
+    
 
     d3.json(file, function() {
 
@@ -318,6 +317,7 @@ function drawTree(file, div) {
                     return "#ccc";
                 }
             })
+             .style("stroke-width", "1.5px")
             .duration(2000)
             .ease("linear")
             .attr("stroke-dashoffset", 0);
@@ -326,13 +326,14 @@ function drawTree(file, div) {
         link.transition()
             .duration(duration)
              .style("stroke", function(d) {
-                console.log(d)
                 if (d.source.highlighted == true) {
                     return "red"
                 } else {
                     return "#ccc";
                 }
             })
+             .style("stroke-width", "1.5px")
+             
             .attr("d", function(d) {
                 return diagonal([{
                     y: d.source.x,
@@ -405,6 +406,8 @@ function drawTree(file, div) {
                 matchedLinks.push(d);
             });
 
+            console.log(matchedLinks)
+
         animateParentChain(matchedLinks);
     }
 
@@ -455,52 +458,27 @@ function drawTree(file, div) {
         selected_links
             .transition()
             .style("stroke", "red")
-
-
     }
 
     function animateParentChain(links) {
-        var linkRenderer = d3.svg.line().interpolate('step-before')
-            .x(function(d) {
-                return d.x;
+
+        d3.selectAll("path")
+            .style("fill", "none")
+            .style("stroke", "#ccc")
+            .style("stroke-width", "1.5px");
+
+        d3.selectAll("path")
+            .filter(function(d, i) {
+                return _.any(links, function(p) {
+                    if (d.target.id == p.target.id) {
+                        return d;
+                    }
+                });
             })
-            .y(function(d) {
-                return d.y;
-            });
-
-        animGroup.selectAll("path.selected")
-            .data([])
-            .exit().remove();
-
-        animGroup.selectAll("path")
-            .data(links)
-            .enter().append("path")
             .attr("class", "selected")
             .style("fill", "none")
             .style("stroke", "red")
             .style("stroke-width", "5px")
-            .attr("d", function(d) {
-                return diagonal([{
-                    y: d.source.x,
-                    x: d.source.y
-                }, {
-                    y: d.source.x,
-                    x: d.source.y
-                }]);
-            })
-
-        // Animate the clipping path
-        var overlayBox = svg.node().getBBox();
-
-        svg.select("#clip-rect")
-            .attr("x", overlayBox.x + overlayBox.width)
-            .attr("y", overlayBox.y)
-            .attr("width", 0)
-            .attr("height", overlayBox.height)
-            .transition().duration(500)
-            .attr("x", overlayBox.x)
-            .attr("width", overlayBox.width);
-
     }
 
     function change_distance(increase) {
