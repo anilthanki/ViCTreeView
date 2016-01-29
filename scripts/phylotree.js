@@ -3,7 +3,7 @@ var species
 var space = 3
 
 function readSpecies(file) {
-    d3.csv(file, function(data) {
+    d3.csv(file, function (data) {
         species = data;
     })
 }
@@ -29,50 +29,39 @@ function drawTree(file, div) {
         .size([height, width]);
 
     var diagonal = d3.svg.line().interpolate('step-before')
-        .x(function(d) {
+        .x(function (d) {
             return d.x;
         })
-        .y(function(d) {
+        .y(function (d) {
             return d.y;
         });
 
-    d3.select("#filterButton").on("click", function() {
+    d3.select("#filterButton").on("click", function () {
         filter(jQuery("#points").val())
     })
 
-    $("#sort_ascending").on("click", function(e) {
+    $("#sort_ascending").on("click", function (e) {
         change_distance(true);
     });
 
 
-    $("#slider").mouseup(function() {
+    $("#slider").mouseup(function () {
         var left = $("#percentage").val()
 
         pathtohighlight(left)
     })
-    $("#sort_descending").on("click", function(e) {
+    $("#sort_descending").on("click", function (e) {
         change_distance(false);
     });
 
 
-
-    d3.select("#save").on("click", function() {
+    d3.select("#save").on("click", function () {
         jQuery("#canvas").html("")
         var canvas = document.getElementById('canvas');
         var context = canvas.getContext('2d');
 
         // do some drawing
         context.clearRect(0, 0, canvas.width, canvas.height);
-        //           d3.selectAll('.link').each(function() {
-        //   var element = this;
-        //   var computedStyle = getComputedStyle(element, null);
-        //   for (var i = 0; i < computedStyle.length; i++) {
-        //     var property = computedStyle.item(i);
-        //     var value = computedStyle.getPropertyValue(property);
-        //     element.style[property] = value;
-        //   }
-        // });
-
 
         var html = d3.select("svg")
             .attr("version", 1.1)
@@ -90,7 +79,7 @@ function drawTree(file, div) {
 
         var image = new Image;
         image.src = imgsrc;
-        image.onload = function() {
+        image.onload = function () {
             context.drawImage(image, 0, 0);
 
             var canvasdata = canvas.toDataURL("image/png");
@@ -126,9 +115,8 @@ function drawTree(file, div) {
         .append("svg:rect")
         .attr('id', 'clip-rect');
 
-    
 
-    d3.json(file, function() {
+    d3.json(file, function () {
 
         root = file.json;
         root.x0 = height / 2;
@@ -156,37 +144,30 @@ function drawTree(file, div) {
 
         // Update the nodes…
         var node = svg.selectAll("g.node")
-            .data(nodes, function(d) {
+            .data(nodes, function (d) {
                 return d.id || (d.id = ++i);
             });
 
         // Enter any new nodes at the parent's previous position.
 
 
-
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
-            .attr("transform", function(d) {
+            .attr("transform", function (d) {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
-            .attr("distance", function(d) {
-                if (d.children) {
-                    distance = 0;
-                    if (d.children[0].species) {
-                        var i = d.children[0].species
-                        var j = d.children[1].species
-                        distance = findElement(species, "species", i)[j] * 100
-                        d.distance = distance
-                        return distance
-                    } else if (d.children[0].distance) {
-                        for (var i = 0; i < d.children.length; i++) {
-                            distance += d.children[i].distance;
-                        }
-                        d.distance = distance
+            .attr("distance", function (d) {
 
-                        return distance
-                    }
+                if (d.species) {
+
                 }
+                else if (d.children) {
+                    var distance = findDistance(d)
+                    d.distance = distance
+
+                    return distance
+                }
+
             });
 
         nodeEnter.append("circle")
@@ -194,14 +175,14 @@ function drawTree(file, div) {
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
             .style("z-index", "999")
-            .style("fill", function(d) {
-                if (d.highlighted == true) {
+            .style("fill", function (d) {
+                if (d.highlighted == true || d.filtered == true) {
                     return "red"
                 } else {
                     return d._children ? "lightsteelblue" : "white";
                 }
             })
-            .attr("id", function(d) {
+            .attr("id", function (d) {
                 return d.id
             })
             .on("click", click);
@@ -209,55 +190,42 @@ function drawTree(file, div) {
 
         nodeEnter.append("text")
             .style("font", "10px sans-serif")
-            .attr("x", function(d) {
+            .attr("x", function (d) {
                 return d.children || d._children ? -10 : 10;
             })
             .attr("dy", ".35em")
-            .attr("text-anchor", function(d) {
+            .attr("text-anchor", function (d) {
                 return d.children || d._children ? "end" : "start";
             })
-            .text(function(d) {
+            .text(function (d) {
                 return d.name;
             }).on('click', pathtoparent);
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
             .duration(duration)
-            .attr("transform", function(d) {
+            .attr("transform", function (d) {
                 return "translate(" + d.y + "," + d.x + ")";
             })
-            .attr("distance", function(d) {
-                if (d.children) {
-                    distance = 0;
-                    if (d.children[0].species) {
-                        var i = d.children[0].species
-                        var j = d.children[1].species
+            .attr("distance", function (d) {
+                if (d.species) {
 
-                        distance = findElement(species, "species", i)[j] * 100
-
-                        return distance
-                    } else if (d.children[0].distance) {
-                        for (var i = 0; i < d.children.length; i++) {
-                            distance += d.children[i].distance;
-                        }
-                        d.distance = distance
-
-                        return distance
-                    }
                 }
-
+                else if (d.children) {
+                    return findDistance(d)
+                }
             });
 
         nodeUpdate.select("circle")
             .attr("r", 4.5)
-            .attr("species", function(d) {
+            .attr("species", function (d) {
                 return d.species
             })
-            .attr("id", function(d) {
+            .attr("id", function (d) {
                 return d.id
             })
-            .style("fill", function(d) {
-                if (d.highlighted == true) {
+            .style("fill", function (d) {
+                if (d.highlighted == true || d.filtered == true) {
                     return "red"
                 } else {
                     return d._children ? "lightsteelblue" : "white";
@@ -271,7 +239,7 @@ function drawTree(file, div) {
         // Transition exiting nodes to the parent's new position.
         var nodeExit = node.exit().transition()
             .duration(duration)
-            .attr("transform", function(d) {
+            .attr("transform", function (d) {
                 return "translate(" + source.y + "," + source.x + ")";
             })
             .remove();
@@ -284,7 +252,7 @@ function drawTree(file, div) {
 
         // Update the links…
         var link = svg.selectAll("path")
-            .data(links, function(d) {
+            .data(links, function (d) {
                 return d.target.id;
             });
 
@@ -292,15 +260,15 @@ function drawTree(file, div) {
         link.enter()
             .append("path", "g")
             .style("fill", "none")
-            .style("stroke", function(d) {
-                if (d.source.highlighted == true) {
+            .style("stroke", function (d) {
+                if (d.source.highlighted == true || d.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
                 }
             })
             .style("stroke-width", "1.5px")
-            .attr("d", function(d) {
+            .attr("d", function (d) {
                 return diagonal([{
                     y: d.source.x,
                     x: d.source.y
@@ -310,14 +278,14 @@ function drawTree(file, div) {
                 }]);
             })
             .transition()
-             .style("stroke", function(d) {
-                if (d.highlighted == true) {
+            .style("stroke", function (d) {
+                if (d.highlighted == true || d.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
                 }
             })
-             .style("stroke-width", "1.5px")
+            .style("stroke-width", "1.5px")
             .duration(2000)
             .ease("linear")
             .attr("stroke-dashoffset", 0);
@@ -325,16 +293,16 @@ function drawTree(file, div) {
         // Transition links to their new position.
         link.transition()
             .duration(duration)
-             .style("stroke", function(d) {
-                if (d.source.highlighted == true) {
+            .style("stroke", function (d) {
+                if (d.source.highlighted == true || d.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
                 }
             })
-             .style("stroke-width", "1.5px")
+            .style("stroke-width", "1.5px")
 
-            .attr("d", function(d) {
+            .attr("d", function (d) {
                 return diagonal([{
                     y: d.source.x,
                     x: d.source.y
@@ -347,7 +315,7 @@ function drawTree(file, div) {
         // Transition exiting nodes to the parent's new position.
         link.exit().transition()
             .duration(duration)
-            .attr("d", function(d) {
+            .attr("d", function (d) {
                 return diagonal([{
                     y: d.source.x,
                     x: d.source.y
@@ -359,7 +327,7 @@ function drawTree(file, div) {
             .remove();
 
         // Stash the old positions for transition.
-        nodes.forEach(function(d) {
+        nodes.forEach(function (d) {
             d.x0 = d.x;
             d.y0 = d.y;
         });
@@ -378,7 +346,10 @@ function drawTree(file, div) {
         update(d);
     }
 
+
+    //highlight based on click
     function pathtoparent(d, i) {
+        console.log("pathtoparent")
         // Walk parent chain
         var ancestors = [];
         var n_ancestors = [];
@@ -389,7 +360,7 @@ function drawTree(file, div) {
             parent = parent.parent;
         }
         var breadcrumb = '';
-        _.each(n_ancestors, function(key, val) {
+        _.each(n_ancestors, function (key, val) {
             if (val < n_ancestors.length - 1) breadcrumb += key + ' / ';
             else breadcrumb += key;
         });
@@ -397,88 +368,40 @@ function drawTree(file, div) {
 
         var matchedLinks = [];
         svg.selectAll('path')
-            .filter(function(d, i) {
-                return _.any(ancestors, function(p) {
+            .filter(function (d, i) {
+                return _.any(ancestors, function (p) {
                     return p === d.target;
                 });
             })
-            .each(function(d) {
+            .each(function (d) {
                 matchedLinks.push(d);
             });
 
-            console.log(matchedLinks)
+        console.log(matchedLinks)
 
         animateParentChain(matchedLinks);
     }
 
-    function pathtohighlight(identity) {
-        svg.selectAll("circle")
-            .style("fill", "none")
-        var selected_nodes = d3.selectAll("circle")
-            .filter(function(d) {
-                if (d.distance <= identity) {
-                    d.highlighted = true
-                    if(d.children && d.children[0].species)
-                    {
-                        _.any(d.children, function(p) {
-                            p.highlighted = true
-                        });
-                    }
-                    return d
-                }else{
-                    d.highlighted = false
-                }
-
-            });
-
-        d3.selectAll("circle")
-            .filter(function(d) {
-                if (d.highlighted == true) {
-                    return d
-                }
-
-            })
-            .transition()
-            .style("fill", "red");
-
-        svg.selectAll('path').transition()
-            .style("stroke", "#ccc")
-        var selected_links = svg.selectAll('path')
-            .filter(function(d, i) {
-                return _.any(selected_nodes[0], function(p) {
-                    if (d.source.id == p.id) {
-                        d.highlighted = true
-                        return d;
-                    }else{
-                        d.highlighted = false
-                    }
-                });
-            })
-
-        selected_links
-            .transition()
-            .style("stroke", "red")
-    }
-
     function animateParentChain(links) {
-
         d3.selectAll("path")
-            .style("stroke-width", "1.5px");
-
-
-        d3.selectAll("path")
-             .filter(function(d, i) {
-                    if (d.source.highlighted == false) {
-                        return d;
-                    }
+            .filter(function (d, i) {
+                if (!d.filtered || d.filtered == false) {
+                    return d;
+                }
             })
             .style("fill", "none")
             .style("stroke", "#ccc")
 
         d3.selectAll("path")
-            .filter(function(d, i) {
-                return _.any(links, function(p) {
+            .style("fill", "none")
+            .style("stroke-width", "1.5px")
+
+        d3.selectAll("path")
+            .filter(function (d, i) {
+                return _.any(links, function (p) {
                     if (d.target.id == p.target.id) {
+                        d.highlighted = true
+
                         return d;
                     }
                 });
@@ -488,6 +411,68 @@ function drawTree(file, div) {
             .style("stroke", "red")
             .style("stroke-width", "5px")
     }
+
+    //highlight based on filter
+
+    function pathtohighlight(identity) {
+        console.log("pathtohighlight " + identity)
+
+        svg.selectAll("circle")
+            .style("fill", "none")
+        var selected_nodes = d3.selectAll("circle")
+            .filter(function (d) {
+                if (d.distance <= identity) {
+                    d.filtered = true
+                    if (d.children && d.children[0].species) {
+                        _.any(d.children, function (p) {
+                            p.filtered = true
+                        });
+                    }
+                    return d
+                } else {
+                    console.log(d.distance)
+                    d.filtered = false
+                }
+
+            });
+
+        d3.selectAll("circle")
+            .filter(function (d) {
+                if (d.filtered == true) {
+                    return d
+                }
+            })
+            .transition()
+            .style("fill", "red");
+
+        svg.selectAll('path')
+            .filter(function (d) {
+                if (!d.highlighted || d.highlighted == false) {
+                    return d
+                }
+            })
+            .transition()
+            .style("stroke", "#ccc")
+            .style("stroke-width", "1.5px")
+
+
+        var selected_links = svg.selectAll('path')
+            .filter(function (d, i) {
+                return _.any(selected_nodes[0], function (p) {
+                    if (d.source.id == p.id) {
+                        d.filtered = true
+                        return d;
+                    } else {
+                        d.filtered = false
+                    }
+                });
+            })
+
+        selected_links
+            .transition()
+            .style("stroke", "red")
+    }
+
 
     function change_distance(increase) {
         if (increase == true) {
@@ -500,11 +485,43 @@ function drawTree(file, div) {
 
         }
         tree.size([height, width]);
-        tree.separation(function(a, b) {
+        tree.separation(function (a, b) {
             return ((a.parent == root) && (b.parent == root)) ? space : 1;
         })
         update(root);
+    }
+}
 
+function findDistance(node) {
+    var distance = 0;
+    var list = []
+    for (var i = 0; i < node.children.length; i++) {
+        if (node.children[i].species) {
+            list.push(node.children[i].species)
+        } else if (node.children[i].children != null) {
+            recursiveFinder(node.children[i])
+        }
+    }
+
+    function recursiveFinder(child_node) {
+        for (var j = 0; j < child_node.children.length; j++) {
+            if (child_node.children[j].species) {
+                list.push(child_node.children[j].species)
+            } else if (child_node.children[j].children != null) {
+                recursiveFinder(child_node.children[j])
+            }
+        }
+    }
+
+    for (var i = 0; i < list.length; i++) {
+        for (var j = i; j < list.length; j++) {
+            var temp_distance = findElement(species, "species", list[i])[list[j]] * 100
+
+            if (distance < temp_distance) {
+                distance = temp_distance
+            }
+        }
+        return distance;
     }
 }
 
