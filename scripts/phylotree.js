@@ -423,7 +423,7 @@ function drawTree(file, div) {
             .filter(function (d) {
                 if (d.distance <= identity) {
                     d.filtered = true
-                    if (d.children && d.children[0].species) {
+                    if (d.children) {
                         _.any(d.children, function (p) {
                             p.filtered = true
                         });
