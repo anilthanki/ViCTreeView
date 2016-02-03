@@ -30,13 +30,6 @@ function drawTree(file, div) {
     var tree = d3.layout.cluster()
         .size([height, width]);
 
-    // var diagonal = d3.svg.line().interpolate('step-before')
-    //     .x(function (d) {
-    //         return d.x;
-    //     })
-    //     .y(function (d) {
-    //         return d.y;
-    //     });
 
     var projection = function(d) { return [d.y, d.x]; }
     var path = function(pathData) {
