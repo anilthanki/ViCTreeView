@@ -12,13 +12,15 @@ function drawTree(file, div) {
 
     $(div).html("")
 
+
+
     var margin = {
             top: 20,
             right: 120,
             bottom: 20,
             left: 120
         },
-        width = 960 - margin.right - margin.left,
+        width = 1260 - margin.right - margin.left,
         height = 800 - margin.top - margin.bottom;
 
     var i = 0,
@@ -28,13 +30,70 @@ function drawTree(file, div) {
     var tree = d3.layout.cluster()
         .size([height, width]);
 
-    var diagonal = d3.svg.line().interpolate('step-before')
-        .x(function (d) {
-            return d.x;
+    // var diagonal = d3.svg.line().interpolate('step-before')
+    //     .x(function (d) {
+    //         return d.x;
+    //     })
+    //     .y(function (d) {
+    //         return d.y;
+    //     });
+
+    var projection = function(d) { return [d.y, d.x]; }
+    var path = function(pathData) {
+      return "M" + pathData[0] + ' ' + pathData[1] + " " + pathData[2];
+    }
+
+    function diagonal(diagonalPath, i) {
+      var source = diagonalPath.source,
+          target = diagonalPath.target,
+          midpointX = (source.x + target.x) / 2,
+          midpointY = (source.y + target.y) / 2,
+          pathData = [source, {x: target.x, y: source.y}, target];
+      pathData = pathData.map(projection);
+      return path(pathData)
+    }
+
+    function projection(x) {
+      if (!arguments.length) return projection;
+      projection = x;
+      return diagonal;
+    }
+    
+     function path(x) {
+      if (!arguments.length) return path;
+      path = x;
+      return diagonal;
+    }
+
+
+      function scaleBranchLengths(nodes, w) {
+
+        // Visit all nodes and adjust y pos width distance metric
+        var visitPreOrder = function(root, callback) {
+          callback(root)
+          if (root.children) {
+            for (var i = root.children.length - 1; i >= 0; i--){
+
+              visitPreOrder(root.children[i], callback)
+            };
+          }
+        }
+
+        visitPreOrder(nodes[0], function(node) {
+          // node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.data.length || 0)
+          node.depth = (node.parent ? node.parent.depth : 0) + (parseFloat(node.attribute) || 0)
+
         })
-        .y(function (d) {
-            return d.y;
-        });
+        var depths = nodes.map(function(n) { return n.depth; });
+
+        var yscale = d3.scale.linear()
+          .domain([0, d3.max(depths)])
+          .range([0, w]);
+        visitPreOrder(nodes[0], function(node) {
+          node.y = yscale(node.depth)
+        })
+        return yscale
+      }
 
     d3.select("#filterButton").on("click", function () {
         filter(jQuery("#points").val())
@@ -139,8 +198,10 @@ function drawTree(file, div) {
     function update(source) {
 
         // Compute the new tree layout.
-        var nodes = tree.nodes(root).reverse(),
+        var nodes = tree.nodes(root),
             links = tree.links(nodes);
+
+        var yscale = scaleBranchLengths(nodes, width)
 
         // Update the nodes…
         var node = svg.selectAll("g.node")
@@ -148,16 +209,80 @@ function drawTree(file, div) {
                 return d.id || (d.id = ++i);
             });
 
+
+
+ // Update the links…
+        var link = svg.selectAll("path")
+            .data(links, function (d) {
+                return d.target.id;
+            });
+
+        // Enter any new links at the parent's previous position.
+        link.enter()
+            .append("path", "g")
+            .style("fill", "none")
+            .style("stroke", function (d) {
+                if (d.source.highlighted == true || d.filtered == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
+            .style("stroke-width", "1.5px")
+            .attr("d", diagonal)
+            .transition()
+            .style("stroke", function (d) {
+                if (d.highlighted == true || d.filtered == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
+            .style("stroke-width", "1.5px")
+            .duration(2000)
+            .ease("linear")
+            .attr("stroke-dashoffset", 0);
+
+        // Transition links to their new position.
+        link.transition()
+            .duration(duration)
+            .style("stroke", function (d) {
+                if (d.source.highlighted == true || d.filtered == true) {
+                    return "red"
+                } else {
+                    return "#ccc";
+                }
+            })
+            .style("stroke-width", "1.5px")
+
+            .attr("d", diagonal)
+
+        // Transition exiting nodes to the parent's new position.
+        link.exit().transition()
+            .duration(duration)
+            .attr("d", diagonal)
+            .remove();
+
+
         // Enter any new nodes at the parent's previous position.
 
 
         var nodeEnter = node.enter().append("g")
-            .attr("class", "node")
+            .attr("class", function(n) {
+              if (n.children) {
+                if (n.depth == 0) {
+                  return "root node"
+                } else {
+                  return "inner node"
+                }
+              } else {
+                return "leaf node"
+              }
+            })
             .attr("transform", function (d) {
-                return "translate(" + source.y0 + "," + source.x0 + ")";
+                return "translate(" + d.y + "," + d.x + ")";
             })
             .attr("distance", function (d) {
-
                 if (d.species) {
 
                 }
@@ -189,17 +314,28 @@ function drawTree(file, div) {
 
 
         nodeEnter.append("text")
-            .style("font", "10px sans-serif")
-            .attr("x", function (d) {
-                return d.children || d._children ? -10 : 10;
+            .style("font-size", function (d) {
+                return d.children || d._children ? '8px' : '10px';
             })
-            .attr("dy", ".35em")
+            .attr("x", function (d) {
+                return d.children || d._children ? -6 : 8;
+            })
+            .attr("dy", function (d) {
+                return d.children || d._children ? -6 : 3;
+            })
             .attr("text-anchor", function (d) {
                 return d.children || d._children ? "end" : "start";
             })
             .text(function (d) {
-                return d.name;
-            }).on('click', pathtoparent);
+                return d.children || d._children ? d.attribute : d.name+ ' ('+d.attribute+')';
+                return ;
+            })
+            .attr('fill', function (d) {
+                return d.children || d._children ? "#ccc" : "black";
+            })
+            .on('click', function (d, i) {
+                return d.children || d._children ? "":pathtoparent(d, i);
+            });
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
@@ -245,86 +381,16 @@ function drawTree(file, div) {
             .remove();
 
         nodeExit.select("circle")
-            .attr("r", 1e-6);
+            .attr("r", 1e-6)
+            .remove();
+
 
         nodeExit.select("text")
-            .style("fill-opacity", 1e-6);
-
-        // Update the links…
-        var link = svg.selectAll("path")
-            .data(links, function (d) {
-                return d.target.id;
-            });
-
-        // Enter any new links at the parent's previous position.
-        link.enter()
-            .append("path", "g")
-            .style("fill", "none")
-            .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.filtered == true) {
-                    return "red"
-                } else {
-                    return "#ccc";
-                }
-            })
-            .style("stroke-width", "1.5px")
-            .attr("d", function (d) {
-                return diagonal([{
-                    y: d.source.x,
-                    x: d.source.y
-                }, {
-                    y: d.source.x,
-                    x: d.source.y
-                }]);
-            })
-            .transition()
-            .style("stroke", function (d) {
-                if (d.highlighted == true || d.filtered == true) {
-                    return "red"
-                } else {
-                    return "#ccc";
-                }
-            })
-            .style("stroke-width", "1.5px")
-            .duration(2000)
-            .ease("linear")
-            .attr("stroke-dashoffset", 0);
-
-        // Transition links to their new position.
-        link.transition()
-            .duration(duration)
-            .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.filtered == true) {
-                    return "red"
-                } else {
-                    return "#ccc";
-                }
-            })
-            .style("stroke-width", "1.5px")
-
-            .attr("d", function (d) {
-                return diagonal([{
-                    y: d.source.x,
-                    x: d.source.y
-                }, {
-                    y: d.target.x,
-                    x: d.target.y
-                }]);
-            })
-
-        // Transition exiting nodes to the parent's new position.
-        link.exit().transition()
-            .duration(duration)
-            .attr("d", function (d) {
-                return diagonal([{
-                    y: d.source.x,
-                    x: d.source.y
-                }, {
-                    y: d.target.x,
-                    x: d.target.y
-                }]);
-            })
+            .style("fill-opacity", 1e-6)
             .remove();
+
+
+       
 
         // Stash the old positions for transition.
         nodes.forEach(function (d) {
