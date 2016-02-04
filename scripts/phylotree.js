@@ -1,6 +1,7 @@
 var ui;
 var species
 var space = 3
+var svg;
 
 function readSpecies(file) {
     d3.csv(file, function (data) {
@@ -17,7 +18,8 @@ function drawTree(file, div) {
     var margin = {
             top: 20,
             right: 120,
-            bottom: 20,
+            bottom:
+             20,
             left: 120
         },
         width = 1260 - margin.right - margin.left,
@@ -29,7 +31,6 @@ function drawTree(file, div) {
 
     var tree = d3.layout.cluster()
         .size([height, width]);
-
 
     var projection = function(d) { return [d.y, d.x]; }
     var path = function(pathData) {
@@ -88,20 +89,12 @@ function drawTree(file, div) {
         return yscale
       }
 
-    d3.select("#filterButton").on("click", function () {
-        filter(jQuery("#points").val())
-    })
 
     $("#sort_ascending").on("click", function (e) {
         change_distance(true);
     });
 
 
-    $("#slider").mouseup(function () {
-        var left = $("#percentage").val()
-
-        pathtohighlight(left)
-    })
     $("#sort_descending").on("click", function (e) {
         change_distance(false);
     });
@@ -156,7 +149,7 @@ function drawTree(file, div) {
     var zoomListener = d3.behavior.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
 
 
-    var svg = d3.select(div).append("svg")
+    svg = d3.select(div).append("svg")
         .attr("width", width + margin.right + margin.left)
         .attr("height", height + margin.top + margin.bottom)
         .call(zoomListener)
@@ -189,6 +182,7 @@ function drawTree(file, div) {
     d3.select(self.frameElement).style("height", "800px");
 
     function update(source) {
+
 
         // Compute the new tree layout.
         var nodes = tree.nodes(root),
@@ -394,7 +388,6 @@ function drawTree(file, div) {
 
     // Toggle children on click.
     function click(d) {
-        console.log("clicked")
         if (d.children) {
             d._children = d.children;
             d.children = null;
@@ -408,7 +401,6 @@ function drawTree(file, div) {
 
     //highlight based on click
     function pathtoparent(d, i) {
-        console.log("pathtoparent")
         // Walk parent chain
         var ancestors = [];
         var n_ancestors = [];
@@ -435,8 +427,6 @@ function drawTree(file, div) {
             .each(function (d) {
                 matchedLinks.push(d);
             });
-
-        console.log(matchedLinks)
 
         animateParentChain(matchedLinks);
     }
@@ -471,66 +461,7 @@ function drawTree(file, div) {
             .style("stroke-width", "5px")
     }
 
-    //highlight based on filter
-
-    function pathtohighlight(identity) {
-        console.log("pathtohighlight " + identity)
-
-        svg.selectAll("circle")
-            .style("fill", "none")
-        var selected_nodes = d3.selectAll("circle")
-            .filter(function (d) {
-                if (d.distance <= identity) {
-                    d.filtered = true
-                    if (d.children) {
-                        _.any(d.children, function (p) {
-                            p.filtered = true
-                        });
-                    }
-                    return d
-                } else {
-                    console.log(d.distance)
-                    d.filtered = false
-                }
-
-            });
-
-        d3.selectAll("circle")
-            .filter(function (d) {
-                if (d.filtered == true) {
-                    return d
-                }
-            })
-            .transition()
-            .style("fill", "red");
-
-        svg.selectAll('path')
-            .filter(function (d) {
-                if (!d.highlighted || d.highlighted == false) {
-                    return d
-                }
-            })
-            .transition()
-            .style("stroke", "#ccc")
-            .style("stroke-width", "1.5px")
-
-
-        var selected_links = svg.selectAll('path')
-            .filter(function (d, i) {
-                return _.any(selected_nodes[0], function (p) {
-                    if (d.source.id == p.id) {
-                        d.filtered = true
-                        return d;
-                    } else {
-                        d.filtered = false
-                    }
-                });
-            })
-
-        selected_links
-            .transition()
-            .style("stroke", "red")
-    }
+    
 
 
     function change_distance(increase) {
@@ -591,3 +522,61 @@ function findElement(arr, propName, propValue) {
         }
     }
 }
+
+//highlight based on filter
+
+    function pathtohighlight(identity) {
+        svg.selectAll("circle")
+            .style("fill", "none")
+        var selected_nodes = d3.selectAll("circle")
+            .filter(function (d) {
+                if (d.distance <= identity) {
+                    d.filtered = true
+                    if (d.children) {
+                        _.any(d.children, function (p) {
+                            p.filtered = true
+                        });
+                    }
+                    return d
+                } else {
+                    d.filtered = false
+                }
+
+            });
+
+        d3.selectAll("circle")
+            .filter(function (d) {
+                if (d.filtered == true) {
+                    return d
+                }
+            })
+            .transition()
+            .style("fill", "red");
+
+        svg.selectAll('path')
+            .filter(function (d) {
+                if (!d.highlighted || d.highlighted == false) {
+                    return d
+                }
+            })
+            .transition()
+            .style("stroke", "#ccc")
+            .style("stroke-width", "1.5px")
+
+
+        var selected_links = svg.selectAll('path')
+            .filter(function (d, i) {
+                return _.any(selected_nodes[0], function (p) {
+                    if (d.source.id == p.id) {
+                        d.filtered = true
+                        return d;
+                    } else {
+                        d.filtered = false
+                    }
+                });
+            })
+
+        selected_links
+            .transition()
+            .style("stroke", "red")
+    }

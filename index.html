@@ -63,8 +63,10 @@ $( document ).ready(function() {
             max: 100,
             step: 1,
             slide: function( event, ui ) {
-        $( "#percentage" ).val( ui.value );
-        }
+                $( "#percentage" ).val( ui.value );
+                pathtohighlight(ui.value)
+
+            }
         });
         $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
     });
