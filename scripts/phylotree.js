@@ -326,8 +326,7 @@ function drawTree(file, div) {
                 return d.children || d._children ? "end" : "start";
             })
             .text(function (d) {
-                return d.children || d._children ? d.attribute : d.name+ ' ('+d.attribute+')';
-                return ;
+                return d.children || d._children ? d.annotation : d.name;
             })
             .attr('fill', function (d) {
                 return d.children || d._children ? "#ccc" : "black";
