@@ -3,6 +3,7 @@ var species
 var space = 3
 var svg;
 var highlighted_parent = null;
+var distance = true;
 
 function readSpecies(file) {
     d3.csv(file, function (data) {
@@ -100,6 +101,14 @@ function drawTree(file, div) {
         change_distance(false);
     });
 
+    $("#change_tree").on("click", function (e) {
+        if(distance == true){
+            distance = false;
+        }else{
+            distance = true;
+        }
+        update(root);
+    });
 
     d3.select("#save").on("click", function () {
         jQuery("#canvas").html("")
@@ -189,7 +198,9 @@ function drawTree(file, div) {
         var nodes = tree.nodes(root),
             links = tree.links(nodes);
 
-        var yscale = scaleBranchLengths(nodes, width)
+        if(distance){
+                var yscale = scaleBranchLengths(nodes, width)
+            }
 
         // Update the nodes…
         var node = svg.selectAll("g.node")
@@ -210,7 +221,7 @@ function drawTree(file, div) {
             .append("path", "g")
             .style("fill", "none")
             .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.filtered == true) {
+                if (d.source.highlighted == true || d.source.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
@@ -220,7 +231,7 @@ function drawTree(file, div) {
             .attr("d", diagonal)
             .transition()
             .style("stroke", function (d) {
-                if (d.highlighted == true || d.filtered == true) {
+                if (d.source.highlighted == true || d.source.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
@@ -235,7 +246,7 @@ function drawTree(file, div) {
         link.transition()
             .duration(duration)
             .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.filtered == true) {
+                if (d.source.highlighted == true || d.source.filtered == true) {
                     return "red"
                 } else {
                     return "#ccc";
@@ -436,6 +447,8 @@ function drawTree(file, div) {
         }else{
             d3.selectAll("path")
                 .filter(function (d, i) {
+                    d.highlighted = false;
+                    d.source.highlighted = false;
                     if (!d.filtered || d.filtered == false) {
                         return d;
                     }
@@ -471,6 +484,7 @@ function drawTree(file, div) {
             .filter(function (d, i) {
                 return _.any(links, function (p) {
                     if (d.target.id == p.target.id) {
+                        // d.source.highlighted = true;
                         d.highlighted = true
 
                         return d;
