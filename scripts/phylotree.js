@@ -560,7 +560,7 @@ function findElement(arr, propName, propValue) {
                         });
                     }
                     return d
-                } else {
+                } else if(d.children){
                     d.filtered = false
                 }
 
