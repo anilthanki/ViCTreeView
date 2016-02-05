@@ -2,6 +2,7 @@ var ui;
 var species
 var space = 3
 var svg;
+var highlighted_parent = null;
 
 function readSpecies(file) {
     d3.csv(file, function (data) {
@@ -401,34 +402,55 @@ function drawTree(file, div) {
 
     //highlight based on click
     function pathtoparent(d, i) {
-        // Walk parent chain
-        var ancestors = [];
-        var n_ancestors = [];
-        var parent = d;
-        while (!_.isUndefined(parent)) {
-            ancestors.push(parent);
-            n_ancestors.unshift(parent.name);
-            parent = parent.parent;
-        }
-        var breadcrumb = '';
-        _.each(n_ancestors, function (key, val) {
-            if (val < n_ancestors.length - 1) breadcrumb += key + ' / ';
-            else breadcrumb += key;
-        });
-        $("#infobox").text(breadcrumb);
+        if(highlighted_parent != d){
 
-        var matchedLinks = [];
-        svg.selectAll('path')
-            .filter(function (d, i) {
-                return _.any(ancestors, function (p) {
-                    return p === d.target;
-                });
-            })
-            .each(function (d) {
-                matchedLinks.push(d);
+            // Walk parent chain
+            var ancestors = [];
+            var n_ancestors = [];
+            var parent = d;
+            highlighted_parent = parent;
+            while (!_.isUndefined(parent)) {
+                ancestors.push(parent);
+                n_ancestors.unshift(parent.name);
+                parent = parent.parent;
+            }
+            var breadcrumb = '';
+            _.each(n_ancestors, function (key, val) {
+                if (val < n_ancestors.length - 1) breadcrumb += key + ' / ';
+                else breadcrumb += key;
             });
+            $("#infobox").text(breadcrumb);
 
-        animateParentChain(matchedLinks);
+            var matchedLinks = [];
+            svg.selectAll('path')
+                .filter(function (d, i) {
+                    return _.any(ancestors, function (p) {
+                        return p === d.target;
+                    });
+                })
+                .each(function (d) {
+                    matchedLinks.push(d);
+                });
+
+            animateParentChain(matchedLinks);
+        }else{
+            d3.selectAll("path")
+                .filter(function (d, i) {
+                    if (!d.filtered || d.filtered == false) {
+                        return d;
+                    }
+                })
+                .style("fill", "none")
+                .style("stroke", "#ccc");
+
+
+            d3.selectAll("path")
+                .style("fill", "none")
+                .style("stroke-width", "1.5px");
+ 
+            highlighted_parent = null;
+
+        }
     }
 
     function animateParentChain(links) {
