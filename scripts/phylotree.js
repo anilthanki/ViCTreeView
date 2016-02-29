@@ -1,5 +1,6 @@
 var ui;
-var species
+var species;
+var labels = {};
 var space = 3
 var svg;
 var highlighted_parent = null;
@@ -8,6 +9,17 @@ var distance = true;
 function readSpecies(file) {
     d3.csv(file, function (data) {
         species = data;
+
+    })
+
+}
+
+function readLabels(file) {
+
+    d3.csv(file, function (data) {
+        for(i in data){
+            labels[data[i].Protein_GI] = data[i]
+        }
     })
 }
 
@@ -110,6 +122,11 @@ function drawTree(file, div) {
         update(root);
     });
 
+    $('select[name="label_list"]').change(function() {
+        update(root, $(this).val());
+
+    });
+
     d3.select("#save").on("click", function () {
         jQuery("#canvas").html("")
         var canvas = document.getElementById('canvas');
@@ -185,19 +202,23 @@ function drawTree(file, div) {
             }
         }
 
-        update(root);
+
+        update(root, "name");
     });
 
 
     d3.select(self.frameElement).style("height", "800px");
 
-    function update(source) {
-
+    function update(source, label) {
+        console.log("update "+label)
 
         // Compute the new tree layout.
         var nodes = tree.nodes(root),
             links = tree.links(nodes);
 
+        nodes = addLabels(nodes)
+
+console.log(nodes)
         if(distance){
                 var yscale = scaleBranchLengths(nodes, width)
             }
@@ -326,7 +347,7 @@ function drawTree(file, div) {
                 return d.children || d._children ? "end" : "start";
             })
             .text(function (d) {
-                return d.children || d._children ? d.annotation : d.name;
+                return d.children || d._children ? d.annotation : d[label];
             })
             .attr('fill', function (d) {
                 return d.children || d._children ? "#ccc" : "black";
@@ -368,7 +389,10 @@ function drawTree(file, div) {
 
 
         nodeUpdate.select("text")
-            .style("fill-opacity", 1);
+            .style("fill-opacity", 1)
+            .text(function (d) {
+                return d.children || d._children ? d.annotation : d[label];
+            });
 
         // Transition exiting nodes to the parent's new position.
         var nodeExit = node.exit().transition()
@@ -406,7 +430,7 @@ function drawTree(file, div) {
             d.children = d._children;
             d._children = null;
         }
-        update(d);
+        update(d, "name");
     }
 
 
@@ -513,7 +537,7 @@ function drawTree(file, div) {
         tree.separation(function (a, b) {
             return ((a.parent == root) && (b.parent == root)) ? space : 1;
         })
-        update(root);
+        update(root, "name");
     }
 }
 
@@ -614,4 +638,15 @@ function findElement(arr, propName, propValue) {
         selected_links
             .transition()
             .style("stroke", "red")
+    }
+
+    function addLabels(root){
+        for(i in root){
+            if(root[i].name != ""){
+                for(key in labels[root[i].name]){
+                    root[i][key] = labels[root[i].name][key]
+                }
+            } 
+        }
+        return root
     }

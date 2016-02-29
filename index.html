@@ -36,12 +36,13 @@
             success: function (treeString) {
                 var res = d3_phylotree_newick_parser ( treeString );
                 readSpecies("data/matrix/txid40120_matrix.csv")
+                readLabels("data/matrix/txid40120_label_matrix.csv")
                 drawTree(res, "#tree_container")
             }
         });
 
     
-    function changeGenome(file, matrix){
+    function changeGenome(file, matrix, label){
             console.log(file)
 
             $.ajax({
@@ -51,6 +52,7 @@
                 success: function (treeString) {
                     var res = d3_phylotree_newick_parser ( treeString );
                     readSpecies(matrix)
+                    readLabels(label)
                     drawTree(res, "#tree_container")
                 }
             });
@@ -85,8 +87,8 @@ $( document ).ready(function() {
                     <li class="dropdown">
                         <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li id="example_txid40120" onclick="changeGenome('data/tree/txid40120_tree.nhx','data/matrix/txid40120_matrix.csv')" ><a href="#" class="ui-link">txid40120</a></li>
-                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx','data/matrix/NS1_clustalo_dist_mat.csv')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
+                            <li id="example_txid40120" onclick="changeGenome('data/tree/txid40120_tree.nhx','data/matrix/txid40120_matrix.csv','data/matrix/txid40120_label_matrix.csv')" ><a href="#" class="ui-link">txid40120</a></li>
+                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx','data/matrix/NS1_clustalo_dist_mat.csv','data/matrix/NS1_clustalo_label_matrix.csv')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -115,6 +117,20 @@ $( document ).ready(function() {
                                     <button title="Sort deepsest clades to the top" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" type="button" id="save">
                                         <i class="fa fa-camera"></i>
                                     </button>
+                                </td>
+                                <td> 
+                                    <div id="label_list">
+                                        <select  name='label_list'>
+                                            <option value='Description'>Description</option>
+                                            <option value='Genome_Accession'>Genome_Accession</option>
+                                            <option value='Genus'>Genus</option>
+                                            <option value='Lineage'>Lineage</option>
+                                            <option value='Nucleotide_GI'>Nucleotide_GI</option>
+                                            <option value='Protein_GI' selected>Protein_GI</option>
+                                            <option value='Species_Name'>Species_Name</option>
+                                            <option value='URL'>URL</option>
+                                        </select>
+                                    </div>    
                                 </td>
                             </tr>
                         </tbody>
