@@ -5,6 +5,7 @@ var space = 3
 var svg;
 var highlighted_parent = null;
 var distance = true;
+var label = "Protein_GI"
 
 function readSpecies(file) {
     d3.csv(file, function (data) {
@@ -123,7 +124,8 @@ function drawTree(file, div) {
     });
 
     $('select[name="label_list"]').change(function() {
-        update(root, $(this).val());
+        label = $(this).val()
+        update(root);
 
     });
 
@@ -203,13 +205,13 @@ function drawTree(file, div) {
         }
 
 
-        update(root, "name");
+        update(root);
     });
 
 
     d3.select(self.frameElement).style("height", "800px");
 
-    function update(source, label) {
+    function update(source) {
         console.log("update "+label)
 
         // Compute the new tree layout.
@@ -430,7 +432,7 @@ console.log(nodes)
             d.children = d._children;
             d._children = null;
         }
-        update(d, "name");
+        update(d);
     }
 
 
@@ -537,7 +539,7 @@ console.log(nodes)
         tree.separation(function (a, b) {
             return ((a.parent == root) && (b.parent == root)) ? space : 1;
         })
-        update(root, "name");
+        update(root);
     }
 }
 
