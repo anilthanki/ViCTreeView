@@ -335,10 +335,11 @@ console.log(nodes)
             .on("click", click);
 
 
-        nodeEnter.append("text")
+        var node_text = nodeEnter.append("text")
             .style("font-size", function (d) {
                 return d.children || d._children ? '8px' : '10px';
             })
+            .style("cursor", "pointer")
             .attr("x", function (d) {
                 return d.children || d._children ? -6 : 8;
             })
@@ -354,9 +355,10 @@ console.log(nodes)
             .attr('fill', function (d) {
                 return d.children || d._children ? "#ccc" : "black";
             })
-            .on('click', function (d, i) {
-                return d.children || d._children ? "":pathtoparent(d, i);
+            .on("click", function(d) { 
+                window.open(d.URL); 
             });
+
 
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
@@ -424,15 +426,18 @@ console.log(nodes)
     }
 
     // Toggle children on click.
-    function click(d) {
+    function click(d, i) {
         if (d.children) {
             d._children = d.children;
             d.children = null;
-        } else {
+            update(d);
+        } else if (d._children){
             d.children = d._children;
             d._children = null;
+            update(d);
+        } else {
+            pathtoparent(d, i)
         }
-        update(d);
     }
 
 
