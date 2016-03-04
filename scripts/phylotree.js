@@ -350,7 +350,13 @@ console.log(nodes)
                 return d.children || d._children ? "end" : "start";
             })
             .text(function (d) {
-                return d.children || d._children ? d.annotation : d[label];
+                if(d.children || d._children){
+                    d.annotation;
+                }else if(d[label]){
+                    return d[label];
+                }else{
+                    return d.name;
+                }
             })
             .attr('fill', function (d) {
                 return d.children || d._children ? "#ccc" : "black";
@@ -395,7 +401,13 @@ console.log(nodes)
         nodeUpdate.select("text")
             .style("fill-opacity", 1)
             .text(function (d) {
-                return d.children || d._children ? d.annotation : d[label];
+                if(d.children || d._children){
+                    d.annotation;
+                }else if(d[label]){
+                    return d[label];
+                }else{
+                    return d.name;
+                }
             });
 
         // Transition exiting nodes to the parent's new position.
