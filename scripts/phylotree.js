@@ -577,7 +577,7 @@ function findDistance(node) {
                 distance = temp_distance
             }
         }
-        return distance;
+        return distance.toFixed(2);
     }
 }
 
