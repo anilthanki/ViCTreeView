@@ -616,8 +616,11 @@ function findElement(arr, propName, propValue) {
 //highlight based on filter
 
     function pathtohighlight(identity) {
+console.log("pathtohighlight " + identity)
+
         svg.selectAll("circle")
             .style("fill", "none")
+
         var selected_nodes = d3.selectAll("circle")
             .filter(function (d) {
                 if (d.distance <= identity) {
@@ -628,9 +631,19 @@ function findElement(arr, propName, propValue) {
                         });
                     }
                     return d
-                } else if(d.children){
-                    d.filtered = false
+                } else if(d.distance > identity){
+                    d.filtered = false;
+                    if (d.children) {
+                        _.any(d.children, function (p) {
+                            if(p.species){
+                                p.filtered = false
+                            }
+                        });
+                    }
                 }
+                else if(d.children){
+                    d.filtered = false
+                } 
 
             });
 
