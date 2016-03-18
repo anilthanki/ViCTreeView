@@ -1,34 +1,21 @@
 var ui;
-var species;
-var labels = {};
 var space = 3
 var svg;
 var highlighted_parent = null;
 var distance = true;
 var label = "Protein_GI"
 
-function readSpecies(file) {
-    d3.csv(file, function (data) {
-        species = data;
-
-    })
-
+var Tree = function(distance_file, label_file, json_tree, div){
+    this.json_tree = json_tree;
+    this.div = div;
+    this.species = distance_file;
+    this.labels = label_file;
 }
 
-function readLabels(file) {
+Tree.prototype.drawTree = function(){
 
-    d3.csv(file, function (data) {
-        for(i in data){
-            labels[data[i].Protein_GI] = data[i]
-        }
-    })
-}
-
-function drawTree(file, div) {
-
-    $(div).html("")
-
-
+    var parent = this;
+    $(this.div).html("")
 
     var margin = {
             top: 20,
@@ -41,8 +28,7 @@ function drawTree(file, div) {
         height = 800 - margin.top - margin.bottom;
 
     var i = 0,
-        duration = 750,
-        root;
+        duration = 750;
 
     var tree = d3.layout.cluster()
         .size([height, width]);
@@ -68,14 +54,14 @@ function drawTree(file, div) {
       return diagonal;
     }
     
-     function path(x) {
+    function path(x) {
       if (!arguments.length) return path;
       path = x;
       return diagonal;
     }
 
 
-      function scaleBranchLengths(nodes, w) {
+    function scaleBranchLengths(nodes, w) {
 
         // Visit all nodes and adjust y pos width distance metric
         var visitPreOrder = function(root, callback) {
@@ -114,6 +100,8 @@ function drawTree(file, div) {
         change_distance(false);
     });
 
+    $('#change_tree').unbind('click');
+
     $("#change_tree").on("click", function (e) {
         if(distance == true){
             distance = false;
@@ -122,6 +110,19 @@ function drawTree(file, div) {
         }
         update(root);
     });
+
+    $( "#slider" ).slider({
+            value:0,
+            min: 0,
+            max: 100,
+            step: 1,
+            slide: function( event, ui ) {
+                $( "#percentage" ).val( ui.value );
+                pathtohighlight(ui.value)
+
+            }
+        });
+        $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
 
     $('select[name="label_list"]').change(function() {
         label = $(this).val()
@@ -178,7 +179,7 @@ function drawTree(file, div) {
     var zoomListener = d3.behavior.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
 
 
-    svg = d3.select(div).append("svg")
+    svg = d3.select(this.div).append("svg")
         .attr("width", width + margin.right + margin.left)
         .attr("height", height + margin.top + margin.bottom)
         .call(zoomListener)
@@ -190,9 +191,12 @@ function drawTree(file, div) {
         .attr('id', 'clip-rect');
 
 
-    d3.json(file, function () {
+    console.log(this.json_tree)
 
-        root = file.json;
+    var json_tree = this.json_tree
+    d3.json(json_tree, function () {
+
+        root = json_tree.json;
         root.x0 = height / 2;
         root.y0 = 0;
 
@@ -214,16 +218,19 @@ function drawTree(file, div) {
     function update(source) {
         console.log("update "+label)
 
+        console.log(parent.species)
+        console.log(parent.labels)
         // Compute the new tree layout.
         var nodes = tree.nodes(root),
             links = tree.links(nodes);
 
         nodes = addLabels(nodes)
 
-console.log(nodes)
+        console.log(distance)
         if(distance){
-                var yscale = scaleBranchLengths(nodes, width)
-            }
+
+            var yscale = scaleBranchLengths(nodes, width)
+        }
 
         // Update the nodes…
         var node = svg.selectAll("g.node")
@@ -233,7 +240,7 @@ console.log(nodes)
 
 
 
- // Update the links…
+        // Update the links…
         var link = svg.selectAll("path")
             .data(links, function (d) {
                 return d.target.id;
@@ -558,9 +565,8 @@ console.log(nodes)
         })
         update(root);
     }
-}
 
-function findDistance(node) {
+    function findDistance(node) {
     var distance = 0;
     var list = []
     for (var i = 0; i < node.children.length; i++) {
@@ -583,7 +589,13 @@ function findDistance(node) {
 
     for (var i = 0; i < list.length; i++) {
         for (var j = i; j < list.length; j++) {
-            var temp_distance = findElement(species, "species", list[i])[list[j]] * 100
+            // console.log(species)
+            // console.log(this.species)
+            var array_element = findElement(parent.species, "species", list[i])
+            // console.log(array_element)
+            // console.log(list[j])
+            var temp_distance = array_element ?  array_element[list[j]] * 100 : 0
+
 
             if (distance < temp_distance) {
                 distance = temp_distance
@@ -662,10 +674,15 @@ function findElement(arr, propName, propValue) {
     function addLabels(root){
         for(i in root){
             if(root[i].name != ""){
-                for(key in labels[root[i].name]){
-                    root[i][key] = labels[root[i].name][key]
+                for(key in parent.labels[root[i].name]){
+                    root[i][key] = parent.labels[root[i].name][key]
                 }
             } 
         }
         return root
     }
+}
+
+
+
+

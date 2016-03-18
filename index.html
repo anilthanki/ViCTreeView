@@ -27,19 +27,32 @@
     <link href="css/phylotree.css" rel="stylesheet">
 
     <script>
-       
 
         $.ajax({
             type: "GET",
             url: "data/tree/txid40120_tree.nhx",
             dataType: "text",
             success: function (treeString) {
-                var res = d3_phylotree_newick_parser ( treeString );
-                readSpecies("data/matrix/txid40120_matrix.csv")
-                readLabels("data/matrix/txid40120_label_matrix.csv")
-                drawTree(res, "#tree_container")
-            }
-        });
+                var res = d3_phylotree_newick_parser ( treeString )
+                var species;
+                var labels = {}
+                d3.csv("data/matrix/txid40120_matrix.csv")
+                    .get(function(error, rows) { 
+                        species = rows;
+                        console.log("species")
+                        console.log(species)
+
+                        d3.csv("data/matrix/txid40120_label_matrix.csv")
+                            .get(function(error, rows) { 
+                                for(i in rows){
+                                    labels[rows[i].Protein_GI] = rows[i]
+                                }
+                                var tree1 = new Tree(species, labels, res, "#tree_container");
+                                tree1.drawTree()
+                            });
+                        });
+                }       
+            });
 
     
     function changeGenome(file, matrix, label){
@@ -50,27 +63,30 @@
                 url: file,
                 dataType: "text",
                 success: function (treeString) {
-                    var res = d3_phylotree_newick_parser ( treeString );
-                    readSpecies(matrix)
-                    readLabels(label)
-                    drawTree(res, "#tree_container")
-                }
-            });
+                    var res = d3_phylotree_newick_parser ( treeString )
+                    var species;
+                    var labels = {}
+                    d3.csv(matrix)
+                        .get(function(error, rows) { 
+                            species = rows;
+                            console.log("species")
+                            console.log(species)
+
+                            d3.csv(label)
+                                .get(function(error, rows) { 
+                                    for(i in rows){
+                                        labels[rows[i].Protein_GI] = rows[i]
+                                    }
+                                    var tree1 = new Tree(species, labels, res, "#tree_container");
+                                    tree1.drawTree()
+                                });
+                            });
+                    }       
+                })
     }
 $( document ).ready(function() {
     $(function() {
-        $( "#slider" ).slider({
-            value:0,
-            min: 0,
-            max: 100,
-            step: 1,
-            slide: function( event, ui ) {
-                $( "#percentage" ).val( ui.value );
-                pathtohighlight(ui.value)
-
-            }
-        });
-        $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
+        
     });
 });
 
@@ -88,7 +104,7 @@ $( document ).ready(function() {
                         <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li id="example_txid40120" onclick="changeGenome('data/tree/txid40120_tree.nhx','data/matrix/txid40120_matrix.csv','data/matrix/txid40120_label_matrix.csv')" ><a href="#" class="ui-link">txid40120</a></li>
-                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx','data/matrix/NS1_clustalo_dist_mat.csv','data/matrix/NS1_clustalo_label_matrix.csv')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
+                            <li id="example_denso" onclick="changeGenome('data/tree/denso_tree.nhx','data/matrix/NS1_clustalo_dist_mat.csv','data/matrix/txid40120_label_matrix.csv')" ><a href="#" class="ui-link">Densovirinae_tree</a></li>
                         </ul>
                     </li>
                 </ul>
