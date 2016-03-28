@@ -358,7 +358,7 @@ Tree.prototype.drawTree = function(){
             })
             .text(function (d) {
                 if(d.children || d._children){
-                    d.annotation;
+                    return d.annotation;
                 }else if(d[label]){
                     return d[label];
                 }else{
@@ -408,8 +408,9 @@ Tree.prototype.drawTree = function(){
         nodeUpdate.select("text")
             .style("fill-opacity", 1)
             .text(function (d) {
+                console.log(d.annotation)
                 if(d.children || d._children){
-                    d.annotation;
+                    return d.annotation;
                 }else if(d[label]){
                     return d[label];
                 }else{
