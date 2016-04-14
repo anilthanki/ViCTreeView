@@ -191,8 +191,6 @@ Tree.prototype.drawTree = function(){
         .attr('id', 'clip-rect');
 
 
-    console.log(this.json_tree)
-
     var json_tree = this.json_tree
     d3.json(json_tree, function () {
 
@@ -216,17 +214,12 @@ Tree.prototype.drawTree = function(){
     d3.select(self.frameElement).style("height", "800px");
 
     function update(source) {
-        console.log("update "+label)
-
-        console.log(parent.species)
-        console.log(parent.labels)
         // Compute the new tree layout.
         var nodes = tree.nodes(root),
             links = tree.links(nodes);
 
         nodes = addLabels(nodes)
 
-        console.log(distance)
         if(distance){
 
             var yscale = scaleBranchLengths(nodes, width)
@@ -408,7 +401,6 @@ Tree.prototype.drawTree = function(){
         nodeUpdate.select("text")
             .style("fill-opacity", 1)
             .text(function (d) {
-                console.log(d.annotation)
                 if(d.children || d._children){
                     return d.annotation;
                 }else if(d[label]){
@@ -590,13 +582,8 @@ Tree.prototype.drawTree = function(){
 
     for (var i = 0; i < list.length; i++) {
         for (var j = i; j < list.length; j++) {
-            // console.log(species)
-            // console.log(this.species)
             var array_element = findElement(parent.species, "species", list[i])
-            // console.log(array_element)
-            // console.log(list[j])
             var temp_distance = array_element ?  array_element[list[j]] * 100 : 0
-
 
             if (distance < temp_distance) {
                 distance = temp_distance
@@ -604,20 +591,19 @@ Tree.prototype.drawTree = function(){
         }
         return distance.toFixed(2);
     }
-}
+    }
 
-function findElement(arr, propName, propValue) {
-    for (var i = 0; i < arr.length; i++) {
-        if (arr[i][propName] == propValue) {
-            return arr[i];
+    function findElement(arr, propName, propValue) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i][propName] == propValue) {
+                return arr[i];
+            }
         }
     }
-}
 
-//highlight based on filter
+    //highlight based on filter
 
     function pathtohighlight(identity) {
-console.log("pathtohighlight " + identity)
 
         svg.selectAll("circle")
             .style("fill", "none")
