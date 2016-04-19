@@ -1,5 +1,5 @@
 # phylotree
-Visualisation plugin for ViCTree. This is a customised Phylogenetic Tree developed using D3.js, which reads input files from data directory of this repository and visualise tree.
+phylotree is a visualisation plugin for ViCTree. This is a customised Phylogenetic Tree developed using D3.js, which reads input files from data directory of this repository and visualise tree.
 
 #ViCTree
 ViCTree is a bioinformatics framework that automatically selects new candidate virus sequences from GenBank, generates multiple sequence alignments, calculates a maximum likelihood phylogeny and integrates the sequences into the existing phylogenetic trees.
