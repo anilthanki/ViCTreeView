@@ -124,10 +124,11 @@ Tree.prototype.drawTree = function(){
         });
         $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
 
+    
+
     $('select[name="label_list"]').change(function() {
         label = $(this).val()
         update(root);
-
     });
 
     d3.select("#save").on("click", function () {

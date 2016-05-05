@@ -32,6 +32,8 @@
 
     <script>
 
+  var headerNames;
+
     function changeGenome(file, matrix, label){
             $.ajax({
                 type: "GET",
@@ -46,10 +48,24 @@
                             species = rows;
                             d3.csv(label)
                                 .get(function(error, rows) { 
-                                    for(i in rows){
-                                        labels[rows[i].Protein_GI] = rows[i]
+                                    headerNames = d3.keys(rows[0]);
+
+                                    var list_string = "<select  name='label_list'>";
+                                    
+                                    for(var i =0; i < headerNames.length; i++){
+                                        list_string += "<option value='"+headerNames[i]+"'>"+headerNames[i]+"</option>";
                                     }
+                                    
+                                    list_string += "</select>";
+                                    
+                                    $("#label_list").html(list_string);
+                                    
+                                    for(i in rows){
+                                        labels[rows[i][headerNames[0]]] = rows[i]
+                                    }
+
                                     var tree1 = new Tree(species, labels, res, "#tree_container");
+                                    
                                     tree1.drawTree()
                                 });
                             });
@@ -147,7 +163,7 @@
                                 </td>
                                 <td> 
                                     <div id="label_list">
-                                        <select  name='label_list'>
+                                        <!-- <select  name='label_list'>
                                             <option value='Description'>Description</option>
                                             <option value='Genome_Accession'>Genome_Accession</option>
                                             <option value='Genus'>Genus</option>
@@ -155,7 +171,7 @@
                                             <option value='Nucleotide_GI'>Nucleotide_GI</option>
                                             <option value='Protein_GI' selected>Protein_GI</option>
                                             <option value='Species_Name'>Species_Name</option>
-                                        </select>
+                                        </select> -->
                                     </div>    
                                 </td>
                             </tr>
