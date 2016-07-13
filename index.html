@@ -5,7 +5,7 @@
     <script src="jquery/js/jquery-1.11.2.min.js"></script>
 
     <script src="scripts/github.js"></script>
-    
+
     <script src="scripts/github.bundle.min.js"></script>
 
     <script src="jquery/js/jquery-ui-1.11.2.js"></script>
@@ -13,14 +13,14 @@
     <script src="bootstrap/bootstrap.min.js"></script>
 
     <script src="scripts/d3.v3.min.js"></script>
-    
+
     <script src="scripts/phylotree.js"></script>
 
     <script src="scripts/newick-to-json.js"></script>
 
     <script src="scripts/underscore-min.js"></script>
 
-    <link rel="stylesheet" href="jquery/css/smoothness/jquery-ui-1.11.2.css" />
+    <link rel="stylesheet" href="jquery/css/smoothness/jquery-ui-1.11.2.css"/>
 
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css">
 
@@ -32,181 +32,184 @@
 
     <script>
 
-  var headerNames;
+        var headerNames;
 
-    function changeGenome(file, matrix, label){
+        function changeGenome(file, matrix, label) {
             $.ajax({
                 type: "GET",
                 url: file,
                 dataType: "text",
                 success: function (treeString) {
-                    var res = d3_phylotree_newick_parser ( treeString )
+                    var res = d3_phylotree_newick_parser(treeString)
                     var species;
                     var labels = {}
                     d3.csv(matrix)
-                        .get(function(error, rows) { 
-                            species = rows;
-                            d3.csv(label)
-                                .get(function(error, rows) { 
-                                    headerNames = d3.keys(rows[0]);
+                            .get(function (error, rows) {
+                                species = rows;
+                                d3.csv(label)
+                                        .get(function (error, rows) {
+                                            headerNames = d3.keys(rows[0]);
 
-                                    var list_string = "<select  name='label_list'>";
-                                    
-                                    for(var i =0; i < headerNames.length; i++){
-                                        list_string += "<option value='"+headerNames[i]+"'>"+headerNames[i]+"</option>";
-                                    }
-                                    
-                                    list_string += "</select>";
-                                    
-                                    $("#label_list").html(list_string);
-                                    
-                                    for(i in rows){
-                                        labels[rows[i][headerNames[0]]] = rows[i]
-                                    }
+                                            for (var i in rows) {
+                                                labels[rows[i][headerNames[0]]] = rows[i]
+                                            }
 
-                                    var tree1 = new Tree(species, labels, res, "#tree_container");
-                                    
-                                    tree1.drawTree()
-                                });
+                                            var tree1 = new Tree(species, headerNames, labels, res, "#tree_container");
+
+                                            tree1.readLabel(headerNames);
+
+                                            tree1.drawTree()
+
+                                        });
                             });
-                    }       
-                })
-    }
-
-    $(document).ready(function() {
-        var github = new Github();
-
-        var user_id = "anilthanki"
-        var repo_name = "phylotree"
-        var branch = "master"
-        var dir = "data"
-        var URL = "https://raw.githubusercontent.com/"+user_id+"/"+repo_name+"/"+branch+"/"+dir
-
-        var repo = github.getRepo(user_id, repo_name);
-
-        var file_list = [];
-        
-        var files = repo.contents(branch, dir, function(err, contents) {
-            contents.forEach(function(file){
-                if(file.type == "file"){
-                    var name = file.name;
-
-                    var fileExtensionPatter = /\.([0-9a-z]+)(?=[?#])|(\.)(?:[\w]+)$/
-                    var extension = name.match(fileExtensionPatter)[0]
-
-                    var file_name = name.split(".")[0]
-                    
-                    if("file_name".indexOf("_")){
-                        file_name = file_name.split("_")[0]
-                    }
-
-                    if(jQuery.inArray(file_name, file_list) === -1) {
-                        file_list.push(file_name);
-                    }
                 }
             })
+        }
 
-            var ObjUl = $('<ul class="dropdown-menu"></ul>');
+        $(document).ready(function () {
+            var github = new Github();
 
-            file_list.forEach(function(file){
-                    var file_path = URL+"/"+file;
-                    $("<li id='example_"+file+"'' onclick=changeGenome('"+file_path+".nhx','"+file_path+".csv','"+file_path+"_label.csv')><a href='#' class='ui-link'>"+file+"</a></li>").appendTo(ObjUl);
-                
-            })
+            var user_id = "anilthanki"
+            var repo_name = "phylotree"
+            var branch = "master"
+            var dir = "data"
+            var URL = "https://raw.githubusercontent.com/" + user_id + "/" + repo_name + "/" + branch + "/" + dir
 
-            $('#example').append(ObjUl);
-            
-            var file_path = URL+"/"+file_list[0];
-            changeGenome(file_path+".nhx",file_path+".csv",file_path+"_label.csv")
+            var repo = github.getRepo(user_id, repo_name);
+
+            var file_list = [];
+
+            var files = repo.contents(branch, dir, function (err, contents) {
+                contents.forEach(function (file) {
+                    if (file.type == "file") {
+                        var name = file.name;
+
+                        var fileExtensionPatter = /\.([0-9a-z]+)(?=[?#])|(\.)(?:[\w]+)$/
+                        var extension = name.match(fileExtensionPatter)[0]
+
+                        var file_name = name.split(".")[0]
+
+                        if ("file_name".indexOf("_")) {
+                            file_name = file_name.split("_")[0]
+                        }
+
+                        if (jQuery.inArray(file_name, file_list) === -1) {
+                            file_list.push(file_name);
+                        }
+                    }
+                })
+
+                var ObjUl = $('<ul class="dropdown-menu"></ul>');
+
+                file_list.forEach(function (file) {
+                    var file_path = URL + "/" + file;
+                    $("<li id='example_" + file + "'' onclick=changeGenome('" + file_path + ".nhx','" + file_path + ".csv','" + file_path + "_label.csv')><a href='#' class='ui-link'>" + file + "</a></li>").appendTo(ObjUl);
+
+                })
+
+                $('#example').append(ObjUl);
+
+                var file_path = URL + "/" + file_list[0];
+                changeGenome(file_path + ".nhx", file_path + ".csv", file_path + "_label.csv")
+            });
         });
-    });
 
     </script>
 </head>
 
-<body style = 'padding-top: 100px;'>
+<body style='padding-top: 100px;'>
 
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-        <div class="container-fluid">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
 
-            <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li class="dropdown" id="example">
-                        <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b class="caret"></b></a>
-                    </li>
-                </ul>
-
-                <div class="navbar-brand"> 
-
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td> 
-                                    <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" id="sort_ascending" title="Sort deepest clades to the bototm">
-                                        <i class="fa fa-expand"></i>
-                                    </button>
-                                </td>
-                               <td>
-                                    <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" id="sort_descending" title="Sort deepsest clades to the top">
-                                        <i class="fa fa-compress"></i>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" id="change_tree" title="Sort deepsest clades to the top">
-                                        <i class="fa fa-usb"></i>
-                                    </button>
-                                </td> 
-                                <td> 
-                                    <button title="Sort deepsest clades to the top" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" type="button" id="save">
-                                        <i class="fa fa-camera"></i>
-                                    </button>
-                                </td>
-                                <td> 
-                                    <div id="label_list">
-                                        <!-- <select  name='label_list'>
-                                            <option value='Description'>Description</option>
-                                            <option value='Genome_Accession'>Genome_Accession</option>
-                                            <option value='Genus'>Genus</option>
-                                            <option value='Lineage'>Lineage</option>
-                                            <option value='Nucleotide_GI'>Nucleotide_GI</option>
-                                            <option value='Protein_GI' selected>Protein_GI</option>
-                                            <option value='Species_Name'>Species_Name</option>
-                                        </select> -->
-                                    </div>    
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+            <div class="navbar-brand"> ViCTree
             </div>
-        </div>
+            <a class="hidden-phone" target="_new" href="https://github.com/josephhughes/ViCTree">
+                <img alt="Fork me on GitHub" src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"
+                     style="position: fixed; top: 0; right: 0; border: 0; z-index: 2000">
+            </a>
 
-        <table width="100%">
-            <tbody>
-                <tr>
-                    <td width="20%">
-                        <label for="amount" style="color:gray">Distance:</label>
-                        <input type="text" name="percentage" id="percentage" readonly="" style="border:0; font-weight:bold;"> 
-                    </td>
-                    <td width="80%">
-                        <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" id="slider" style="width:80%;"><span style="left: 0%;" class="ui-slider-handle ui-state-default ui-corner-all" tabindex="0"></span></div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </nav>
-
-
-    <div class = 'container' id = "main_display">
-        <div class = 'row'>
-            <div class = 'col-md-12'>
-                <div id = 'tree_container' class = 'tree-widget'>
-                </div>
-            </div>
         </div>
     </div>
 
-    <canvas id="canvas" width="1000px" height="600px">
-    </canvas> 
+    <table width="100%">
+        <tbody>
+        <tr>
+            <td width="30%">
+                <table>
+                    <tr>
+                        <td>
+                            <ul class="nav navbar-nav">
+                                <li class="dropdown" id="example">
+                                    <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Examples <b
+                                            class="caret"></b></a>
+                                </li>
+                            </ul>
+                        </td>
+                        <td>
+                            <ul class="nav navbar-nav">
+                            <li class="dropdown" id="label_list">
+                                <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Labels <b
+                                        class="caret"></b></a>
+                            </li>
+                            </ul>
+                        </td>
+
+                        <td>
+                            <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
+                                    id="sort_ascending" title="Sort deepest clades to the bototm">
+                                <i class="fa fa-expand"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
+                                    id="sort_descending" title="Sort deepsest clades to the top">
+                                <i class="fa fa-compress"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
+                                    id="change_tree" title="Sort deepsest clades to the top">
+                                <i class="fa fa-usb"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button title="Sort deepsest clades to the top"
+                                    class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" type="button"
+                                    id="save">
+                                <i class="fa fa-camera"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <input type="number" name="percentage" id="percentage" min="0" max="100"
+                                   style="border: 1px solid lightgray; font-weight: bold; margin-left: 10px; padding: 2px; width: 50px;">
+
+                        </td>
+                    </tr>
+                </table>
+            <td width="70%">
+                <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
+                     id="slider" style="width:80%;"><span style="left: 0%;"
+                                                          class="ui-slider-handle ui-state-default ui-corner-all"
+                                                          tabindex="0"></span></div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</nav>
+
+
+<div class='container' id="main_display">
+    <div class='row'>
+        <div class='col-md-12'>
+            <div id='tree_container' class='tree-widget'>
+            </div>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvas" width="1000px" height="600px">
+</canvas>
 </body>
 </html>

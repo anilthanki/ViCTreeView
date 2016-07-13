@@ -5,23 +5,36 @@ var highlighted_parent = null;
 var distance = true;
 var label = "Protein_GI"
 
-var Tree = function(distance_file, label_file, json_tree, div){
+var Tree = function (distance_file, headers, label_file, json_tree, div) {
     this.json_tree = json_tree;
     this.div = div;
     this.species = distance_file;
     this.labels = label_file;
+    this.headers = headers;
 }
 
-Tree.prototype.drawTree = function(){
+Tree.prototype.drawTree = function () {
 
     var parent = this;
     $(this.div).html("")
 
+    var ObjUl = $('<ul class="dropdown-menu"></ul>');
+
+    for (var i = 0; i < parent.headers.length; i++) {
+        $("<li><a href='#' class='ui-link label_list'>" + parent.headers[i] + "</a></li>").appendTo(ObjUl);
+
+    }
+
+    $("#label_list").append(ObjUl);
+
+    $(".label_list").on('click', function () {
+        changeLabel(this.text)
+    })
+
     var margin = {
             top: 20,
             right: 120,
-            bottom:
-             20,
+            bottom: 20,
             left: 120
         },
         width = 1260 - margin.right - margin.left,
@@ -33,62 +46,67 @@ Tree.prototype.drawTree = function(){
     var tree = d3.layout.cluster()
         .size([height, width]);
 
-    var projection = function(d) { return [d.y, d.x]; }
-    var path = function(pathData) {
-      return "M" + pathData[0] + ' ' + pathData[1] + " " + pathData[2];
+    var projection = function (d) {
+        return [d.y, d.x];
+    }
+    var path = function (pathData) {
+        return "M" + pathData[0] + ' ' + pathData[1] + " " + pathData[2];
     }
 
     function diagonal(diagonalPath, i) {
-      var source = diagonalPath.source,
-          target = diagonalPath.target,
-          midpointX = (source.x + target.x) / 2,
-          midpointY = (source.y + target.y) / 2,
-          pathData = [source, {x: target.x, y: source.y}, target];
-      pathData = pathData.map(projection);
-      return path(pathData)
+        var source = diagonalPath.source,
+            target = diagonalPath.target,
+            midpointX = (source.x + target.x) / 2,
+            midpointY = (source.y + target.y) / 2,
+            pathData = [source, {x: target.x, y: source.y}, target];
+        pathData = pathData.map(projection);
+        return path(pathData)
     }
 
     function projection(x) {
-      if (!arguments.length) return projection;
-      projection = x;
-      return diagonal;
+        if (!arguments.length) return projection;
+        projection = x;
+        return diagonal;
     }
-    
+
     function path(x) {
-      if (!arguments.length) return path;
-      path = x;
-      return diagonal;
+        if (!arguments.length) return path;
+        path = x;
+        return diagonal;
     }
 
 
     function scaleBranchLengths(nodes, w) {
 
         // Visit all nodes and adjust y pos width distance metric
-        var visitPreOrder = function(root, callback) {
-          callback(root)
-          if (root.children) {
-            for (var i = root.children.length - 1; i >= 0; i--){
+        var visitPreOrder = function (root, callback) {
+            callback(root)
+            if (root.children) {
+                for (var i = root.children.length - 1; i >= 0; i--) {
 
-              visitPreOrder(root.children[i], callback)
-            };
-          }
+                    visitPreOrder(root.children[i], callback)
+                }
+                ;
+            }
         }
 
-        visitPreOrder(nodes[0], function(node) {
-          // node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.data.length || 0)
-          node.depth = (node.parent ? node.parent.depth : 0) + (parseFloat(node.attribute) || 0)
+        visitPreOrder(nodes[0], function (node) {
+            // node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.data.length || 0)
+            node.depth = (node.parent ? node.parent.depth : 0) + (parseFloat(node.attribute) || 0)
 
         })
-        var depths = nodes.map(function(n) { return n.depth; });
+        var depths = nodes.map(function (n) {
+            return n.depth;
+        });
 
         var yscale = d3.scale.linear()
-          .domain([0, d3.max(depths)])
-          .range([0, w]);
-        visitPreOrder(nodes[0], function(node) {
-          node.y = yscale(node.depth)
+            .domain([0, d3.max(depths)])
+            .range([0, w]);
+        visitPreOrder(nodes[0], function (node) {
+            node.y = yscale(node.depth)
         })
         return yscale
-      }
+    }
 
 
     $("#sort_ascending").on("click", function (e) {
@@ -103,33 +121,43 @@ Tree.prototype.drawTree = function(){
     $('#change_tree').unbind('click');
 
     $("#change_tree").on("click", function (e) {
-        if(distance == true){
+        if (distance == true) {
             distance = false;
-        }else{
+        } else {
             distance = true;
         }
         update(root);
     });
 
-    $( "#slider" ).slider({
-            value:0,
-            min: 0,
-            max: 100,
-            step: 1,
-            slide: function( event, ui ) {
-                $( "#percentage" ).val( ui.value );
-                pathtohighlight(ui.value)
 
-            }
-        });
-        $( "#percentage" ).val( $( "#slider" ).slider( "value" ) );
-
-    
-
-    $('select[name="label_list"]').change(function() {
-        label = $(this).val()
-        update(root);
+    $("#slider").slider({
+        value: 0,
+        min: 0,
+        max: 100,
+        step: 1,
+        slide: function (event, ui) {
+            $("#percentage").val(ui.value);
+        }
     });
+    $("#percentage").val($("#slider").slider("value"));
+
+    $("#slider").slider({
+        change: function (event, ui) {
+            pathtohighlight(ui.value)
+        }
+    });
+
+    $("#percentage").on("change", function () {
+        $("#slider").slider({
+            value: $("#percentage").val()
+        })
+    })
+
+    function changeLabel(newLabel) {
+        console.log("changeLabel " + newLabel)
+        label = newLabel
+        update(root);
+    }
 
     d3.select("#save").on("click", function () {
         jQuery("#canvas").html("")
@@ -221,7 +249,7 @@ Tree.prototype.drawTree = function(){
 
         nodes = addLabels(nodes)
 
-        if(distance){
+        if (distance) {
 
             var yscale = scaleBranchLengths(nodes, width)
         }
@@ -231,7 +259,6 @@ Tree.prototype.drawTree = function(){
             .data(nodes, function (d) {
                 return d.id || (d.id = ++i);
             });
-
 
 
         // Update the links…
@@ -291,16 +318,16 @@ Tree.prototype.drawTree = function(){
 
 
         var nodeEnter = node.enter().append("g")
-            .attr("class", function(n) {
-              if (n.children) {
-                if (n.depth == 0) {
-                  return "root node"
+            .attr("class", function (n) {
+                if (n.children) {
+                    if (n.depth == 0) {
+                        return "root node"
+                    } else {
+                        return "inner node"
+                    }
                 } else {
-                  return "inner node"
+                    return "leaf node"
                 }
-              } else {
-                return "leaf node"
-              }
             })
             .attr("transform", function (d) {
                 return "translate(" + d.y + "," + d.x + ")";
@@ -351,19 +378,19 @@ Tree.prototype.drawTree = function(){
                 return d.children || d._children ? "end" : "start";
             })
             .text(function (d) {
-                if(d.children || d._children){
+                if (d.children || d._children) {
                     return d.annotation;
-                }else if(d[label]){
+                } else if (d[label]) {
                     return d[label];
-                }else{
+                } else {
                     return d.name;
                 }
             })
             .attr('fill', function (d) {
                 return d.children || d._children ? "#ccc" : "black";
             })
-            .on("click", function(d) { 
-                window.open(d.URL); 
+            .on("click", function (d) {
+                window.open(d.URL);
             });
 
 
@@ -402,11 +429,11 @@ Tree.prototype.drawTree = function(){
         nodeUpdate.select("text")
             .style("fill-opacity", 1)
             .text(function (d) {
-                if(d.children || d._children){
+                if (d.children || d._children) {
                     return d.annotation;
-                }else if(d[label]){
+                } else if (d[label]) {
                     return d[label];
-                }else{
+                } else {
                     return d.name;
                 }
             });
@@ -429,8 +456,6 @@ Tree.prototype.drawTree = function(){
             .remove();
 
 
-       
-
         // Stash the old positions for transition.
         nodes.forEach(function (d) {
             d.x0 = d.x;
@@ -444,7 +469,7 @@ Tree.prototype.drawTree = function(){
             d._children = d.children;
             d.children = null;
             update(d);
-        } else if (d._children){
+        } else if (d._children) {
             d.children = d._children;
             d._children = null;
             update(d);
@@ -456,7 +481,7 @@ Tree.prototype.drawTree = function(){
 
     //highlight based on click
     function pathtoparent(d, i) {
-        if(highlighted_parent != d){
+        if (highlighted_parent != d) {
 
             // Walk parent chain
             var ancestors = [];
@@ -487,7 +512,7 @@ Tree.prototype.drawTree = function(){
                 });
 
             animateParentChain(matchedLinks);
-        }else{
+        } else {
             d3.selectAll("path")
                 .filter(function (d, i) {
                     d.highlighted = false;
@@ -503,7 +528,7 @@ Tree.prototype.drawTree = function(){
             d3.selectAll("path")
                 .style("fill", "none")
                 .style("stroke-width", "1.5px");
- 
+
             highlighted_parent = null;
 
         }
@@ -540,8 +565,6 @@ Tree.prototype.drawTree = function(){
             .style("stroke-width", "5px")
     }
 
-    
-
 
     function change_distance(increase) {
         if (increase == true) {
@@ -561,37 +584,37 @@ Tree.prototype.drawTree = function(){
     }
 
     function findDistance(node) {
-    var distance = 0;
-    var list = []
-    for (var i = 0; i < node.children.length; i++) {
-        if (node.children[i].species) {
-            list.push(node.children[i].species)
-        } else if (node.children[i].children != null) {
-            recursiveFinder(node.children[i])
-        }
-    }
-
-    function recursiveFinder(child_node) {
-        for (var j = 0; j < child_node.children.length; j++) {
-            if (child_node.children[j].species) {
-                list.push(child_node.children[j].species)
-            } else if (child_node.children[j].children != null) {
-                recursiveFinder(child_node.children[j])
+        var distance = 0;
+        var list = []
+        for (var i = 0; i < node.children.length; i++) {
+            if (node.children[i].species) {
+                list.push(node.children[i].species)
+            } else if (node.children[i].children != null) {
+                recursiveFinder(node.children[i])
             }
         }
-    }
 
-    for (var i = 0; i < list.length; i++) {
-        for (var j = i; j < list.length; j++) {
-            var array_element = findElement(parent.species, "species", list[i])
-            var temp_distance = array_element ?  array_element[list[j]] * 100 : 0
-
-            if (distance < temp_distance) {
-                distance = temp_distance
+        function recursiveFinder(child_node) {
+            for (var j = 0; j < child_node.children.length; j++) {
+                if (child_node.children[j].species) {
+                    list.push(child_node.children[j].species)
+                } else if (child_node.children[j].children != null) {
+                    recursiveFinder(child_node.children[j])
+                }
             }
         }
-        return distance.toFixed(2);
-    }
+
+        for (var i = 0; i < list.length; i++) {
+            for (var j = i; j < list.length; j++) {
+                var array_element = findElement(parent.species, "species", list[i])
+                var temp_distance = array_element ? array_element[list[j]] * 100 : 0
+
+                if (distance < temp_distance) {
+                    distance = temp_distance
+                }
+            }
+            return distance.toFixed(2);
+        }
     }
 
     function findElement(arr, propName, propValue) {
@@ -608,7 +631,6 @@ Tree.prototype.drawTree = function(){
 
         svg.selectAll("circle")
             .style("fill", "none")
-
         var selected_nodes = d3.selectAll("circle")
             .filter(function (d) {
                 if (d.distance <= identity) {
@@ -619,19 +641,19 @@ Tree.prototype.drawTree = function(){
                         });
                     }
                     return d
-                } else if(d.distance > identity){
+                } else if (d.distance > identity) {
                     d.filtered = false;
                     if (d.children) {
                         _.any(d.children, function (p) {
-                            if(p.species){
+                            if (p.species) {
                                 p.filtered = false
                             }
                         });
                     }
                 }
-                else if(d.children){
+                else if (d.children) {
                     d.filtered = false
-                } 
+                }
 
             });
 
@@ -654,7 +676,6 @@ Tree.prototype.drawTree = function(){
             .style("stroke", "#ccc")
             .style("stroke-width", "1.5px")
 
-
         var selected_links = svg.selectAll('path')
             .filter(function (d, i) {
                 return _.any(selected_nodes[0], function (p) {
@@ -672,13 +693,13 @@ Tree.prototype.drawTree = function(){
             .style("stroke", "red")
     }
 
-    function addLabels(root){
-        for(i in root){
-            if(root[i].name != ""){
-                for(key in parent.labels[root[i].name]){
+    function addLabels(root) {
+        for (i in root) {
+            if (root[i].name != "") {
+                for (key in parent.labels[root[i].name]) {
                     root[i][key] = parent.labels[root[i].name][key]
                 }
-            } 
+            }
         }
         return root
     }
