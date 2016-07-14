@@ -21,7 +21,12 @@ Tree.prototype.drawTree = function () {
     var ObjUl = $('<ul class="dropdown-menu"></ul>');
 
     for (var i = 0; i < parent.headers.length; i++) {
-        $("<li><a href='#' class='ui-link label_list'>" + parent.headers[i] + "</a></li>").appendTo(ObjUl);
+        if(i == 0){
+            parent.label = parent.headers[i]
+            $("<li><a href='#' class='ui-link label_list'>" + parent.headers[i] + " <span class='checked'> <i class='fa fa-check'></i></span> </a></li>").appendTo(ObjUl);
+        }else{
+            $("<li><a href='#' class='ui-link label_list'>" + parent.headers[i] + " <span class='checked'></span> </a></li>").appendTo(ObjUl);
+        }
 
     }
 
@@ -122,10 +127,10 @@ Tree.prototype.drawTree = function () {
 
     $("#change_tree").on("click", function (e) {
 
-        if($(".change_tree").hasClass("fa-align-justify")){
+        if ($(".change_tree").hasClass("fa-align-justify")) {
             $(".change_tree").removeClass("fa-align-justify")
             $(".change_tree").addClass("fa-align-left")
-        }else{
+        } else {
             $(".change_tree").addClass("fa-align-justify")
             $(".change_tree").removeClass("fa-align-left")
         }
@@ -163,8 +168,19 @@ Tree.prototype.drawTree = function () {
     })
 
     function changeLabel(newLabel) {
-        console.log("changeLabel " + newLabel)
-        label = newLabel
+        label = newLabel.replace(/\s+/g, '');
+
+        $("#label_list .checked").each(function () {
+            var self = this
+            var select = $(self).parent().text().replace(/\s+/g, '')
+
+            if (label == select) {
+                $(self).html(" <i class='fa fa-check'></i>")
+            } else {
+                $(self).html("")
+            }
+        });
+
         update(root);
     }
 

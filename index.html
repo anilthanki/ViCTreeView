@@ -35,6 +35,16 @@
         var headerNames;
 
         function changeGenome(file, matrix, label) {
+            $("#example .checked").each(function () {
+                var self = this
+                var select = $(self).parent().text().replace(/\s+/g, '')
+
+                if (file.indexOf(select) >= 0) {
+                    $(self).html(" <i class='fa fa-check'></i>")
+                } else {
+                    $(self).html("")
+                }
+            });
             $.ajax({
                 type: "GET",
                 url: file,
@@ -101,7 +111,7 @@
 
                 file_list.forEach(function (file) {
                     var file_path = URL + "/" + file;
-                    $("<li id='example_" + file + "'' onclick=changeGenome('" + file_path + ".nhx','" + file_path + ".csv','" + file_path + "_label.csv')><a href='#' class='ui-link'>" + file + "</a></li>").appendTo(ObjUl);
+                    $("<li id='example_" + file + "'' onclick=changeGenome('" + file_path + ".nhx','" + file_path + ".csv','" + file_path + "_label.csv')><a href='#' class='ui-link'>" + file + "<span class='checked'></span> </a></li>").appendTo(ObjUl);
 
                 })
 
@@ -147,10 +157,10 @@
                         </td>
                         <td>
                             <ul class="nav navbar-nav">
-                            <li class="dropdown" id="label_list">
-                                <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Labels <b
-                                        class="caret"></b></a>
-                            </li>
+                                <li class="dropdown" id="label_list">
+                                    <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Labels <b
+                                            class="caret"></b></a>
+                                </li>
                             </ul>
                         </td>
 
