@@ -121,6 +121,15 @@ Tree.prototype.drawTree = function () {
     $('#change_tree').unbind('click');
 
     $("#change_tree").on("click", function (e) {
+
+        if($(".change_tree").hasClass("fa-align-justify")){
+            $(".change_tree").removeClass("fa-align-justify")
+            $(".change_tree").addClass("fa-align-left")
+        }else{
+            $(".change_tree").addClass("fa-align-justify")
+            $(".change_tree").removeClass("fa-align-left")
+        }
+
         if (distance == true) {
             distance = false;
         } else {
@@ -633,7 +642,7 @@ Tree.prototype.drawTree = function () {
             .style("fill", "none")
         var selected_nodes = d3.selectAll("circle")
             .filter(function (d) {
-                if (d.distance <= identity) {
+                if (d.distance <= identity || d.filtered == true) {
                     d.filtered = true
                     if (d.children) {
                         _.any(d.children, function (p) {
@@ -641,7 +650,8 @@ Tree.prototype.drawTree = function () {
                         });
                     }
                     return d
-                } else if (d.distance > identity) {
+                }
+                else if (d.distance > identity && d.filtered != true) {
                     d.filtered = false;
                     if (d.children) {
                         _.any(d.children, function (p) {
@@ -651,9 +661,9 @@ Tree.prototype.drawTree = function () {
                         });
                     }
                 }
-                else if (d.children) {
-                    d.filtered = false
-                }
+                //else if (d.children) {
+                //    d.filtered = false
+                //}
 
             });
 
