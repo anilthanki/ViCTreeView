@@ -196,7 +196,6 @@ Tree.prototype.drawTree = function () {
             .attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .node().parentNode.innerHTML;
-
         var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
         var img = '<img src="' + imgsrc + '">';
         d3.select("#svgdataurl").html(img);
@@ -206,21 +205,35 @@ Tree.prototype.drawTree = function () {
             context = canvas.getContext("2d");
 
 
-        var image = new Image;
-        image.src = imgsrc;
-        image.onload = function () {
-            context.drawImage(image, 0, 0);
+        //var image = new Image;
+        //image.src = imgsrc;
+        //image.onload = function () {
+        //    context.drawImage(image, 0, 0);
+        //
+        //    var canvasdata = canvas.toDataURL("image/png");
+        //
+        //    var pngimg = '<img src="' + canvasdata + '">';
+        //    d3.select("#pngdataurl").html(pngimg);
+        //
+        //    var a = document.createElement("a");
+        //    a.download = "sample.png";
+        //    a.href = canvasdata;
+        //    a.click();
+        //};
 
-            var canvasdata = canvas.toDataURL("image/png");
+        /**
+         *
+         * @param data
+         * @param name
+         */
 
-            var pngimg = '<img src="' + canvasdata + '">';
-            d3.select("#pngdataurl").html(pngimg);
+        dlText(html, "svg")
 
-            var a = document.createElement("a");
-            a.download = "sample.png";
-            a.href = canvasdata;
-            a.click();
-        };
+        function dlText(data, name) {
+            download(data, name, "text/plain");
+        }
+
+
 
     });
 
