@@ -640,6 +640,11 @@ Tree.prototype.drawTree = function () {
 
         svg.selectAll("circle")
             .style("fill", "none")
+        d3.selectAll("circle")
+            .filter(function (d) {
+                d.filtered = false
+            })
+
         var selected_nodes = d3.selectAll("circle")
             .filter(function (d) {
                 if (d.distance <= identity || d.filtered == true) {
