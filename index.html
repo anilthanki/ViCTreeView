@@ -56,8 +56,6 @@
 
                                             var tree1 = new Tree(species, headerNames, labels, res, "#tree_container");
 
-                                            tree1.readLabel(headerNames);
-
                                             tree1.drawTree()
 
                                         });
@@ -158,24 +156,24 @@
 
                         <td>
                             <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
-                                    id="sort_ascending" title="Sort deepest clades to the bototm">
+                                    id="sort_ascending" title="Sort deepest clade to the bottom">
                                 <i class="fa fa-expand"></i>
                             </button>
                         </td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
-                                    id="sort_descending" title="Sort deepsest clades to the top">
+                                    id="sort_descending" title="Sort deepest clade to the top">
                                 <i class="fa fa-compress"></i>
                             </button>
                         </td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
-                                    id="change_tree" title="Sort deepsest clades to the top">
-                                <i class="fa fa-usb"></i>
+                                    id="change_tree" title="Toggle between branch length">
+                                <i class="change_tree fa fa-align-justify"></i>
                             </button>
                         </td>
                         <td>
-                            <button title="Sort deepsest clades to the top"
+                            <button title="Capture Tree"
                                     class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" type="button"
                                     id="save">
                                 <i class="fa fa-camera"></i>
