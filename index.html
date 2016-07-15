@@ -165,7 +165,21 @@
                                 </li>
                             </ul>
                         </td>
-
+                        <td>
+                            <ul class="nav navbar-nav">
+                                <li class="dropdown" id="save">
+                                    <a data-toggle="dropdown" class="dropdown-toggle ui-link" href="#">Download <b
+                                            class="caret"></b></a>
+                                    <ul class="dropdown-menu" aria-labelledby="save">
+                                        <li><a id="save_svg" class="ui-link" href="#">SVG <span
+                                                class="checked"> </a></li>
+                                        <li><a id="save_image" class="ui-link" href="#">Image <span
+                                                class="checked"></span>
+                                        </a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </td>
                         <td>
                             <button type="button" class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all"
                                     id="sort_ascending" title="Sort deepest clade to the bottom">
@@ -184,12 +198,6 @@
                                 <i class="change_tree fa fa-align-justify"></i>
                             </button>
                         </td>
-                        <td>
-                            <button title="Capture Tree"
-                                    class="btn btn-default btn-sm ui-btn ui-shadow ui-corner-all" type="button"
-                                    id="save">
-                                <i class="fa fa-camera"></i>
-                            </button>
                         </td>
                         <td>
                             <input type="number" name="percentage" id="percentage" min="0" max="100"
@@ -219,7 +227,7 @@
     </div>
 </div>
 
-<!--<canvas id="canvas" width="2000px" height="1600px">-->
-<!--</canvas>-->
+<canvas id="canvas" width="2000px" height="1600px" style="display: none;">
+</canvas>
 </body>
 </html>
