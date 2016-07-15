@@ -185,26 +185,26 @@ Tree.prototype.drawTree = function () {
     }
 
     d3.select("#save").on("click", function () {
-        jQuery("#canvas").html("")
-        var canvas = document.getElementById('canvas');
-        var context = canvas.getContext('2d');
-
-        // do some drawing
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        //jQuery("#canvas").html("")
+        //var canvas = document.getElementById('canvas');
+        //var context = canvas.getContext('2d');
+        //
+        //// do some drawing
+        //context.clearRect(0, 0, canvas.width, canvas.height);
 
         var html = d3.select("svg")
             .attr("version", 1.1)
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .node().parentNode.innerHTML;
-        var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
-        var img = '<img src="' + imgsrc + '">';
-        d3.select("#svgdataurl").html(img);
-
-
-        var canvas = document.querySelector("canvas"),
-            context = canvas.getContext("2d");
-
-
+        //var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+        //var img = '<img src="' + imgsrc + '">';
+        //d3.select("#svgdataurl").html(img);
+        //
+        //
+        //var canvas = document.querySelector("canvas"),
+        //    context = canvas.getContext("2d");
+        //
+        //
         //var image = new Image;
         //image.src = imgsrc;
         //image.onload = function () {
