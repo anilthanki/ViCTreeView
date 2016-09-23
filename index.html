@@ -143,10 +143,11 @@
         </div>
     </div>
 
-    <table width="100%">
+    <table width="100%" style="table-layout: auto;">
         <tbody>
+
         <tr>
-            <td width="30%">
+            <td width="25%"  valign="bottom">
                 <table>
                     <tr>
                         <td>
@@ -199,18 +200,34 @@
                             </button>
                         </td>
                         </td>
-                        <td>
+                        <!--<td>-->
+                        <!---->
+                        <!--</td>-->
+                    </tr>
+                </table>
+            <td width="75%">
+                <table width="100%" style="table-layout: auto;">
+                    <tr>
+                        <td idth="10%">
+                                    <span style="color: #777">
+                                         Pairwise distance
+                                    </span>
+                        </td>
+
+                        <td width="10%">
                             <input type="number" name="percentage" id="percentage" min="0" max="100"
                                    style="border: 1px solid lightgray; font-weight: bold; margin-left: 10px; padding: 2px; width: 50px;">
-
+                        </td>
+                        <td width="80%">
+                            <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
+                                 id="slider" style="width:80%;"><span style="left: 0%;"
+                                                                      class="ui-slider-handle ui-state-default ui-corner-all"
+                                                                      tabindex="0"></span></div>
                         </td>
                     </tr>
                 </table>
-            <td width="70%">
-                <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                     id="slider" style="width:80%;"><span style="left: 0%;"
-                                                          class="ui-slider-handle ui-state-default ui-corner-all"
-                                                          tabindex="0"></span></div>
+
+
             </td>
         </tr>
         </tbody>
