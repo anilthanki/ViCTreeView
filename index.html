@@ -34,7 +34,14 @@
 
     <script>
 
-        var headerNames;
+        var mouseX, mouseY;
+        
+        $(document).mousemove(function (e) {
+            mouseX = e.pageX;
+            mouseY = e.pageY;
+        });
+
+         var headerNames;
 
         function changeGenome(file, matrix, label) {
             $("#example .checked").each(function () {
@@ -74,6 +81,10 @@
                             });
                 }
             })
+        }
+
+        function removePopup() {
+            $("#popup").fadeOut()
         }
 
         $(document).ready(function () {
@@ -123,7 +134,7 @@
                 changeGenome(file_path + ".nhx", file_path + ".csv", file_path + "_label.csv")
             });
         });
-
+       
     </script>
 </head>
 
@@ -203,9 +214,6 @@
                             </button>
                         </td>
                         </td>
-                        <!--<td>-->
-                        <!---->
-                        <!--</td>-->
                     </tr>
                 </table>
             <td width="75%">
@@ -245,6 +253,54 @@
             </div>
         </div>
     </div>
+    <div id="popup" class="bubbleleft" style="width:200px; height:100px;">
+    <div style="overflow: hidden; left: 0px; top: 0px; position: relative;">
+        <table width="100%" cellspacing="0" border="0">
+            <thead>
+            <tr>
+                <td bgcolor="darkcyan">
+                    <div style="color: white; padding: 2px; width: 100%;" id="stable_id_header">&nbsp;<span
+                            id="stable_label"></span>
+                        <i onclick="removePopup();" class="fa fa-close "
+                           style="color: white; position: absolute; right: 5px; cursor: pointer; "></i>
+                    </div>
+                </td>
+            </tr>
+            </thead>
+        </table>
+
+    </div>
+    <div style="position: relative; padding: 5px;">
+        <table width=100% cellspacing="0" border="0">
+            <tbody>
+           
+            <tr>
+                <td>
+                    <div id="desc"></div>
+                </td>
+            </tr>
+            <tr align="right">
+                <td align="">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <div id="ncbiSeqLink" style="float: right" title="NCBI"></div>
+                            </td>
+                            <td>
+                                <div id="ncbiClusterLink" style="float: right" title="Cluster"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 </div>
 
 <canvas id="canvas" width="2000px" height="1600px" style="display: none;">

@@ -477,7 +477,7 @@ Tree.prototype.drawTree = function() {
                 return d.children || d._children ? "#ccc" : "black";
             })
             .on("click", function(d) {
-                window.open(d.URL);
+                popup(d);
             });
 
 
@@ -565,6 +565,37 @@ Tree.prototype.drawTree = function() {
             pathtoparent(d, i)
         }
     }
+
+    // Shows popup with links to NCBI
+    function popup(d) {
+
+console.log(mouseX)
+console.log(mouseY)
+
+            $('#desc').html(d[parent.headers[0]])
+
+
+            $('#ncbiSeqLink').html("<a target='_blank' href='http://www.ensembl.org/id/" + d.URL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>NCBI</i></button></a>")
+
+            $('#ncbiClusterLink').html("<a target='_blank' href='http://www.ensembl.org/id/" + d.URL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>NCBI</i></button></a>")
+
+            if (mouseX + $("#popup").width() > $("#main1").width()) {
+                $("#popup").css({"left": mouseX - $("#popup").width() - 5});
+                $("#popup").css({"top": (mouseY - $("#popup").height() - 30)});
+                $("#popup").attr('class', 'bubbleright')
+            }
+            else {
+                $("#popup").css({"left": (mouseX - 26)});
+                $("#popup").css({"top": (mouseY - $("#popup").height() - 30)});
+                $("#popup").attr('class', 'bubbleleft')
+            }
+
+            $("#popup").fadeIn();
+
+        }
+
+  
+
 
 
     //highlight based on click
