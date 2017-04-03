@@ -20,6 +20,8 @@ Tree.prototype.drawTree = function() {
     var parent = this;
     $(this.div).html("")
 
+    $("#label_list").html("<a data-toggle='dropdown' class='dropdown-toggle ui-link' href='#''>Labels <b class='caret'></b></a>")
+    
     var ObjUl = $('<ul class="dropdown-menu"></ul>');
 
     for (var i = 0; i < parent.headers.length; i++) {
