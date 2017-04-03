@@ -4,6 +4,8 @@ var svg;
 var highlighted_parent = null;
 var distance = true;
 var label = "Protein_GI"
+var colours = ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)', 'rgb(177,89,40)', 'rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)', 'rgb(255,237,111)']
+
 
 var Tree = function (distance_file, headers, label_file, json_tree, div) {
     this.json_tree = json_tree;
@@ -334,23 +336,33 @@ Tree.prototype.drawTree = function () {
             .append("path", "g")
             .style("fill", "none")
             .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.source.filtered == true) {
+                if (d.source.highlighted == true) {
                     return "red"
-                } else {
+                } else if (d.filtered == true) {
+                    return d.colours;
+                } else{
                     return "#ccc";
                 }
             })
             .style("stroke-width", "1.5px")
             .attr("d", diagonal)
             .transition()
-            .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.source.filtered == true) {
+            .style("stroke", function (d, i) {
+                if (d.target.highlighted == true) {
                     return "red"
-                } else {
+                } else if (d.source.filtered == true) {
+                    return d.source.colours;
+                } else{
                     return "#ccc";
                 }
             })
-            .style("stroke-width", "1.5px")
+            .style("stroke-width", function (d, i) {
+                if (d.target.highlighted == true) {
+                    return "5px"
+                } else{
+                    return "1.5px";
+                }
+            })
             .duration(2000)
             .ease("linear")
             .attr("stroke-dashoffset", 0);
@@ -358,14 +370,22 @@ Tree.prototype.drawTree = function () {
         // Transition links to their new position.
         link.transition()
             .duration(duration)
-            .style("stroke", function (d) {
-                if (d.source.highlighted == true || d.source.filtered == true) {
+            .style("stroke", function (d, i) {
+                if (d.target.highlighted == true) {
                     return "red"
-                } else {
+                } else if (d.source.filtered == true) {
+                    return d.source.colours;
+                } else{
                     return "#ccc";
                 }
             })
-            .style("stroke-width", "1.5px")
+            .style("stroke-width", function (d, i) {
+                if (d.target.highlighted == true) {
+                    return "5px"
+                } else{
+                    return "1.5px";
+                }
+            })
 
             .attr("d", diagonal)
 
@@ -412,9 +432,11 @@ Tree.prototype.drawTree = function () {
             .style("stroke", "black")
             .style("stroke-width", "0.5px")
             .style("z-index", "999")
-            .style("fill", function (d) {
-                if (d.highlighted == true || d.filtered == true) {
+            .style("fill", function (d, i) {
+                 if (d.highlighted == true) {
                     return "red"
+                } else if (d.colours) {
+                    return d.colours;
                 } else {
                     return d._children ? "lightsteelblue" : "white";
                 }
@@ -479,9 +501,11 @@ Tree.prototype.drawTree = function () {
             .attr("id", function (d) {
                 return d.id
             })
-            .style("fill", function (d) {
-                if (d.highlighted == true || d.filtered == true) {
+            .style("fill", function (d, i) {
+                 if (d.highlighted == true) {
                     return "red"
+                } else if (d.colours) {
+                    return d.colours;
                 } else {
                     return d._children ? "lightsteelblue" : "white";
                 }
@@ -579,7 +603,7 @@ Tree.prototype.drawTree = function () {
                 .filter(function (d, i) {
                     d.highlighted = false;
                     d.source.highlighted = false;
-                    if (!d.filtered || d.filtered == false) {
+                    if (!d.source.filtered || d.source.filtered == false) {
                         return d;
                     }
                 })
@@ -599,22 +623,22 @@ Tree.prototype.drawTree = function () {
     function animateParentChain(links) {
         d3.selectAll("path")
             .filter(function (d, i) {
-                if (!d.filtered || d.filtered == false) {
+                if (!d.source.filtered || d.source.filtered == false) {
                     return d;
                 }
             })
             .style("fill", "none")
             .style("stroke", "#ccc")
 
-        d3.selectAll("path")
-            .style("fill", "none")
-            .style("stroke-width", "1.5px")
+        // d3.selectAll("path")
+        //     .style("fill", "none")
+        //     .style("stroke-width", "1.5px")
 
         d3.selectAll("path")
             .filter(function (d, i) {
                 return _.any(links, function (p) {
                     if (d.target.id == p.target.id) {
-                        // d.source.highlighted = true;
+                        d.target.highlighted = true;
                         d.highlighted = true
 
                         return d;
@@ -691,38 +715,97 @@ Tree.prototype.drawTree = function () {
 
     function pathtohighlight(identity) {
 
-        svg.selectAll("circle")
-            .style("fill", "none")
-        d3.selectAll("circle")
-            .filter(function (d) {
-                d.filtered = false
-            })
 
-        var selected_nodes = d3.selectAll("circle")
+
+            d3.selectAll("circle")
             .filter(function (d) {
+                if(!d.highlighted)
+                 {
+                     d.filtered = false;
+                     d.colours = null;
+                     return d;
+                 }  
+            })
+            .transition()
+            .style("fill", "none")
+
+             d3.selectAll("circle")
+            .filter(function (d) {
+                if(d.highlighted)
+                 {
+                     d.filtered = false;
+                     d.colours = null;
+                     return d;
+                 }  
+            })
+            .transition()
+            .style("fill", "red")
+
+            d3.selectAll("path")
+            .filter(function (d) {
+                if(!d.target.highlighted)
+                 {  d.filtered = false;
+                    d.colours = null;
+                    return d
+             }
+            })
+            .transition()
+            .style("stroke", "#ccc")
+            .style("stroke-width", "1.5px")
+
+            d3.selectAll("path")
+            .filter(function (d) {
+                if(d.target.highlighted)
+                 {  
+                    d.filtered = false;
+                    d.colours = null;
+                    return d
+             }
+            })
+            .transition()
+            .style("stroke", "red")
+            .style("stroke-width", "5px")
+
+
+        var colour = 0
+        var selected_nodes = {}; 
+
+        d3.selectAll("circle")
+            .filter(function (d, i) {
                 if (d.distance <= identity || d.filtered == true) {
                     d.filtered = true
+                    var flag = false;
+                    if(d.colours == null){
+                        colour++;
+                        d.colours = colours[colour]
+                        var id = d.id
+                        selected_nodes[id] = colours[colour] 
+                    }
                     if (d.children) {
                         _.any(d.children, function (p) {
                             p.filtered = true
+                            if(p.colours == null){
+                                p.colours = colours[colour]
+                                var id = p.id
+                        selected_nodes[id] = colours[colour] 
+
+                            }
                         });
                     }
-                    return d
+                   
                 }
                 else if (d.distance > identity && d.filtered != true) {
                     d.filtered = false;
+                    d.colours = null;
                     if (d.children) {
                         _.any(d.children, function (p) {
                             if (p.species) {
                                 p.filtered = false
+                                p.colours = null
                             }
                         });
                     }
                 }
-                //else if (d.children) {
-                //    d.filtered = false
-                //}
-
             });
 
         d3.selectAll("circle")
@@ -732,33 +815,34 @@ Tree.prototype.drawTree = function () {
                 }
             })
             .transition()
-            .style("fill", "red");
+            .style("fill", function(d, i){
+                return d.colours
+            })
 
-        svg.selectAll('path')
+       
+
+            svg.selectAll('path')
+            .filter(function (d, i) {
+                return _.any(selected_nodes, function (value, key) {
+                    if (d.source.id == key) {
+                        d.filtered = true
+                        d.colours = value
+                    } 
+                });
+
+            })
+
+            svg.selectAll('path')
             .filter(function (d) {
-                if (!d.highlighted || d.highlighted == false) {
+                if (d.filtered == true) {
                     return d
                 }
             })
             .transition()
-            .style("stroke", "#ccc")
-            .style("stroke-width", "1.5px")
-
-        var selected_links = svg.selectAll('path')
-            .filter(function (d, i) {
-                return _.any(selected_nodes[0], function (p) {
-                    if (d.source.id == p.id) {
-                        d.filtered = true
-                        return d;
-                    } else {
-                        d.filtered = false
-                    }
-                });
+            .style("stroke", function(d, i){
+                console.log(d.colours)
+                return d.colours
             })
-
-        selected_links
-            .transition()
-            .style("stroke", "red")
     }
 
     function addLabels(root) {
