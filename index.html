@@ -65,7 +65,7 @@
                     d3.csv(matrix)
                             .get(function (error, rows) {
                                 species = rows;
-                                d3.csv(label)
+                                d3.tsv(label)
                                         .get(function (error, rows) {
                                             headerNames = d3.keys(rows[0]);
 
@@ -124,14 +124,14 @@
 
                 file_list.forEach(function (file) {
                     var file_path = URL + "/" + file;
-                    $("<li id='example_" + file + "'' onclick=changeGenome('" + file_path + ".nhx','" + file_path + ".csv','" + file_path + "_label.csv')><a href='#' class='ui-link'>" + file + "<span class='checked'></span> </a></li>").appendTo(ObjUl);
+                    $("<li id='example_" + file + "'' onclick=changeGenome('" + file_path + ".nhx','" + file_path + ".csv','" + file_path + "_label.tsv')><a href='#' class='ui-link'>" + file + "<span class='checked'></span> </a></li>").appendTo(ObjUl);
 
                 })
 
                 $('#example').append(ObjUl);
 
                 var file_path = URL + "/" + file_list[0];
-                changeGenome(file_path + ".nhx", file_path + ".csv", file_path + "_label.csv")
+                changeGenome(file_path + ".nhx", file_path + ".csv", file_path + "_label.tsv")
             });
         });
        

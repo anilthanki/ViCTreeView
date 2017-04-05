@@ -575,9 +575,9 @@ console.log(mouseY)
             $('#desc').html(d[parent.headers[0]])
 
 
-            $('#ncbiSeqLink').html("<a target='_blank' href='http://www.ensembl.org/id/" + d.URL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>NCBI</i></button></a>")
+            $('#ncbiSeqLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/nuccore/" + d.RepURL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Nucleotide</i></button></a>")
 
-            $('#ncbiClusterLink').html("<a target='_blank' href='http://www.ensembl.org/id/" + d.URL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>NCBI</i></button></a>")
+            $('#ncbiClusterLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/protein/" + d.ClusterURL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Protein</i></button></a>")
 
             if (mouseX + $("#popup").width() > $("#main1").width()) {
                 $("#popup").css({"left": mouseX - $("#popup").width() - 5});
