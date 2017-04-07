@@ -569,15 +569,12 @@ Tree.prototype.drawTree = function() {
     // Shows popup with links to NCBI
     function popup(d) {
 
-console.log(mouseX)
-console.log(mouseY)
-
             $('#desc').html(d[parent.headers[0]])
 
 
-            $('#ncbiSeqLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/nuccore/" + d.RepURL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Nucleotide</i></button></a>")
+            $('#ncbiSeqLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/nuccore/" + d.RepresentativeSequence + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Nucleotide</i></button></a>")
 
-            $('#ncbiClusterLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/protein/" + d.ClusterURL + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Protein</i></button></a>")
+            $('#ncbiClusterLink').html("<a target='_blank' href='https://www.ncbi.nlm.nih.gov/protein/" + d.ClusterSequences + "'><button type='button' class='btn btn-default'> <i class='fa fa-1x'>Protein</i></button></a>")
 
             if (mouseX + $("#popup").width() > $("#main1").width()) {
                 $("#popup").css({"left": mouseX - $("#popup").width() - 5});
