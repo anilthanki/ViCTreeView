@@ -85,6 +85,7 @@
 
         function removePopup() {
             $("#popup").fadeOut()
+            $("#popup2").fadeOut()
         }
 
         $(document).ready(function () {
@@ -253,53 +254,105 @@
             </div>
         </div>
     </div>
-    <div id="popup" class="bubbleleft" style="width:200px; height:100px;">
-    <div style="overflow: hidden; left: 0px; top: 0px; position: relative;">
-        <table width="100%" cellspacing="0" border="0">
-            <thead>
-            <tr>
-                <td bgcolor="darkcyan">
-                    <div style="color: white; padding: 2px; width: 100%;" id="stable_id_header">&nbsp;<span
-                            id="stable_label"></span>
-                        <i onclick="removePopup();" class="fa fa-close "
-                           style="color: white; position: absolute; right: 5px; cursor: pointer; "></i>
-                    </div>
-                </td>
-            </tr>
-            </thead>
-        </table>
+    <div id="popup" class="bubbleleft">
+        <div style="overflow: hidden; left: 0px; top: 0px; position: relative;">
+            <table width="100%" cellspacing="0" border="0">
+                <thead>
+                <tr bgcolor=darkcyan>
+                    <td bgcolor="darkcyan" width=180px>
+                        <div style="color: white; padding: 2px; width: 180px; text-overflow: ellipsis;overflow: hidden;" id="desc">
+                        </div>
+                    </td>
+                    <td width=20px>
+                        <div style="color: white; padding: 2px; width: 100%;" id="">
+                            <i onclick="removePopup();" class="fa fa-close "
+                               style="color: white; position: absolute; right: 5px; top:5px; cursor: pointer; "></i>
+                        </div>
+                    </td>
+                </tr>
+                </thead>
+            </table>
 
-    </div>
-    <div style="position: relative; padding: 5px;">
-        <table width=100% cellspacing="0" border="0">
-            <tbody>
-           
-            <tr>
-                <td>
-                    <div id="desc"></div>
-                </td>
-            </tr>
-            <tr align="right">
-                <td align="">
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td>
-                                <div id="ncbiSeqLink" style="float: right" title="NCBI"></div>
-                            </td>
-                            <td>
-                                <div id="ncbiClusterLink" style="float: right" title="Cluster"></div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        </div>
+        <div style="position: relative; padding: 5px;">
+            <table width=100% cellspacing="0" border="0">
+                <tbody>
+               
+                <tr>
+                    <td align="">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div id="ncbiSeqLink"  title="NCBI"></div>
+                                    
+                                    <hr style="margin-bottom: 2px; margin-top: 2px;">                           
+                                    
+                                    <div id="ncbiClusterLink"  title="Cluster"></div>
+                                </td>
+                                
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-</div>
+    <div id="popup2" class="bubbleleft">
+        <div style="overflow: hidden; left: 0px; top: 0px; position: relative;">
+            <table width="100%" cellspacing="0" border="0">
+                <thead>
+                <tr>
+                    <td bgcolor="darkcyan">
+                        <div style="color: white; padding: 2px; width: 100%;" id="stable_id_header">&nbsp;<span
+                                id="stable_label"></span>
+                            <i onclick="removePopup();" class="fa fa-close "
+                               style="color: white; position: absolute; right: 5px; cursor: pointer; "></i>
+                        </div>
+                    </td>
+                </tr>
+                </thead>
+            </table>
+
+        </div>
+        <div style="position: relative; padding: 5px;">
+            <table width=100% cellspacing="0" border="0">
+                <tbody>
+               
+                <tr>
+                    <td>
+                        <div id="desc"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div id="pathroparent"  title="Path to Parent" ></div>
+                                    
+                                    <hr style="margin-bottom: 2px; margin-top: 2px;">                           
+                                    
+                                    <div id="reroot"  title="Re-root" ></div>
+                                    
+                                    <hr style="margin-bottom: 2px; margin-top: 2px;">                           
+                                    
+                                    <div id="openclose"  title="collapse" ></div>
+                                </td>
+                                
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
 

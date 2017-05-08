@@ -121,7 +121,7 @@ svg:not(:root) {
     z-index: 999;
 }
 
-.bubbleright::after {
+/*.bubbleright::after {
     border-bottom: 25px solid transparent;
     border-right: 25px solid white;
     bottom: -25px;
@@ -138,12 +138,18 @@ svg:not(:root) {
     left: 22px;
     margin-left: -10px;
     z-index: 999;
-}
+}*/
 
 #popup {
     display: none;
-    height: 100px;
+    height: auto;
     width: 200px;
+}
+
+#popup2 {
+    display: none;
+    height: auto;
+    width: auto;
 }
 
 #popup_header {
@@ -156,4 +162,13 @@ svg:not(:root) {
 #popup_body {
     padding: 5px;
     position: relative;
+}
+
+
+.popup_text{
+   color: gray;
+}
+
+.popup_text:hover{
+   color: black;
 }
