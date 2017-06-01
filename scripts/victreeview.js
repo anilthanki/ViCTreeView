@@ -650,7 +650,7 @@ Tree.prototype.drawTree = function () {
         var ncbiClusterLink= $('<span/>', {
             text: "ClusterSeqs", //set text 1 to 10
             class: 'popup_text',
-            click: function () { window.open(url); }
+            click: function () { window.open(ncbiClusterURL); }
         });        
 
         $('#ncbiClusterLink').html(ncbiClusterLink)
