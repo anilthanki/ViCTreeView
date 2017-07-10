@@ -849,6 +849,12 @@ Tree.prototype.drawTree = function () {
         tree.separation(function (a, b) {
             return ((a.parent == root) && (b.parent == root)) ? space : 1;
         })
+
+
+
+        d3.select("svg")
+            .attr("height", height  + margin.top + margin.bottom)
+
         update(root);
     }
 
