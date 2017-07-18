@@ -44,7 +44,7 @@ Tree.prototype.drawTree = function () {
             top: 20,
             right: 120,
             bottom: 20,
-            left: 120
+            left: 20
         },
         width = 1260 - margin.right - margin.left,
         height = 800 - margin.top - margin.bottom;
@@ -269,6 +269,11 @@ Tree.prototype.drawTree = function () {
 
     function zoom() {
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+
+        svg
+            .attr("width", $(document).width())
+            .attr("height", $(document).height())
+
     }
 
 
@@ -276,11 +281,11 @@ Tree.prototype.drawTree = function () {
 
 
     svg = d3.select(this.div).append("svg")
-        .attr("width", width + margin.right + margin.left)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("width",  $(document).width())
+        .attr("height",  $(document).height())
         .call(zoomListener)
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate("+margin.left+","+margin.top+")");
 
     svg.append("svg:clipPath").attr("id", "clipper")
         .append("svg:rect")
